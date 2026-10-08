@@ -1,4 +1,4 @@
-export type CodeThemeId = 'one-dark' | 'dracula' | 'tokyo-night' | 'monokai' | 'github-dark';
+export type CodeThemeId = 'tokyo-night' | 'one-dark' | 'dracula' | 'monokai' | 'github-dark' | 'github-light';
 
 export interface CodeTheme {
   id: CodeThemeId;
@@ -13,6 +13,12 @@ export const CODE_THEMES: CodeTheme[] = [
     name: 'Tokyo Night',
     previewColors: ['#bb9af7', '#7aa2f7', '#9ece6a'],
     bg: '#16161e',
+  },
+  {
+    id: 'github-light',
+    name: 'GitHub Light',
+    previewColors: ['#cf222e', '#0969da', '#1a7f37'],
+    bg: '#f6f8fa',
   },
   {
     id: 'one-dark',

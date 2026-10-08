@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { initialSnippets } from './data/mockSnippets';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SnippetCard } from './components/SnippetCard';
@@ -7,16 +7,40 @@ import { TagFilter } from './components/TagFilter';
 import { AddSnippetModal } from './components/AddSnippetModal';
 import { EmptyState } from './components/EmptyState';
 import { CodeThemeSelector } from './components/CodeThemeSelector';
+import { ThemeToggle, type AppThemeMode } from './components/ThemeToggle';
 import type { CodeThemeId } from './types/themes';
 import type { Snippet } from './types';
 
 export default function App() {
   const [snippets, setSnippets] = useLocalStorage<Snippet[]>('codepocket-snippets', initialSnippets);
+  const [appTheme, setAppTheme] = useLocalStorage<AppThemeMode>('codepocket-app-theme', 'dark');
   const [codeTheme, setCodeTheme] = useLocalStorage<CodeThemeId>('codepocket-code-theme', 'tokyo-night');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sync data-theme attribute on documentElement and update meta theme-color
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', appTheme);
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', appTheme === 'light' ? '#f8fafc' : '#000000');
+    }
+  }, [appTheme]);
+
+  const handleToggleAppTheme = () => {
+    setAppTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      // Automatically pair default code themes for best contrast
+      if (next === 'light' && codeTheme === 'tokyo-night') {
+        setCodeTheme('github-light');
+      } else if (next === 'dark' && codeTheme === 'github-light') {
+        setCodeTheme('tokyo-night');
+      }
+      return next;
+    });
+  };
 
   // Extract all unique tags from every snippet
   const allTags = useMemo(() => {
@@ -99,6 +123,10 @@ export default function App() {
             <CodeThemeSelector
               currentTheme={codeTheme}
               onSelectTheme={setCodeTheme}
+            />
+            <ThemeToggle
+              mode={appTheme}
+              onToggle={handleToggleAppTheme}
             />
             <button
               className="add-btn"
