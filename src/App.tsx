@@ -6,10 +6,13 @@ import { SearchBar } from './components/SearchBar';
 import { TagFilter } from './components/TagFilter';
 import { AddSnippetModal } from './components/AddSnippetModal';
 import { EmptyState } from './components/EmptyState';
+import { CodeThemeSelector } from './components/CodeThemeSelector';
+import type { CodeThemeId } from './types/themes';
 import type { Snippet } from './types';
 
 export default function App() {
-  const [snippets, setSnippets] = useLocalStorage<Snippet[]>('devshelf-snippets', initialSnippets);
+  const [snippets, setSnippets] = useLocalStorage<Snippet[]>('codepocket-snippets', initialSnippets);
+  const [codeTheme, setCodeTheme] = useLocalStorage<CodeThemeId>('codepocket-code-theme', 'tokyo-night');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -86,20 +89,26 @@ export default function App() {
                   <polyline points="8 6 2 12 8 18" />
                 </svg>
               </div>
-              <h1 className="app-title">DevShelf</h1>
+              <h1 className="app-title">CodePocket</h1>
             </div>
             <p className="app-subtitle">
               Your personal snippet vault &amp; developer bookmark engine
             </p>
           </div>
-          <button
-            className="add-btn"
-            onClick={() => setIsModalOpen(true)}
-            id="add-snippet-btn"
-          >
-            <span className="add-btn-icon">+</span>
-            <span className="add-btn-text">New Snippet</span>
-          </button>
+          <div className="header-actions">
+            <CodeThemeSelector
+              currentTheme={codeTheme}
+              onSelectTheme={setCodeTheme}
+            />
+            <button
+              className="add-btn"
+              onClick={() => setIsModalOpen(true)}
+              id="add-snippet-btn"
+            >
+              <span className="add-btn-icon">+</span>
+              <span className="add-btn-text">New Snippet</span>
+            </button>
+          </div>
         </header>
 
         {/* Search & Filters */}
@@ -127,8 +136,10 @@ export default function App() {
               <SnippetCard
                 key={snippet.id}
                 snippet={snippet}
+                codeTheme={codeTheme}
                 onToggleFavorite={handleToggleFavorite}
                 onDelete={handleDelete}
+                onSelectTheme={setCodeTheme}
               />
             ))}
           </div>

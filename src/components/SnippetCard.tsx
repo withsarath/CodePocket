@@ -1,31 +1,41 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Snippet } from '../types';
+import { highlightCode } from '../utils/syntaxHighlighter';
+import { CODE_THEMES, type CodeThemeId } from '../types/themes';
 
 interface SnippetCardProps {
   snippet: Snippet;
+  codeTheme?: CodeThemeId;
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => void;
+  onSelectTheme?: (theme: CodeThemeId) => void;
 }
 
-const LANG_COLORS: Record<string, string> = {
-  typescript: '#3178c6',
-  javascript: '#f7df1e',
-  python: '#3572A5',
-  sql: '#e38c00',
-  bash: '#4EAA25',
-  css: '#563d7c',
-  html: '#e34c26',
-  yaml: '#cb171e',
-  rust: '#dea584',
-  go: '#00ADD8',
-  java: '#b07219',
-  csharp: '#178600',
-  ruby: '#701516',
-  php: '#4F5D95',
-  other: '#6b7280',
+const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
+  typescript: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', border: 'rgba(56, 189, 248, 0.28)' },
+  javascript: { color: '#facc15', bg: 'rgba(250, 204, 21, 0.1)', border: 'rgba(250, 204, 21, 0.28)' },
+  python: { color: '#60a5fa', bg: 'rgba(96, 165, 250, 0.1)', border: 'rgba(96, 165, 250, 0.28)' },
+  sql: { color: '#2dd4bf', bg: 'rgba(45, 212, 191, 0.1)', border: 'rgba(45, 212, 191, 0.28)' },
+  bash: { color: '#4ade80', bg: 'rgba(74, 222, 128, 0.1)', border: 'rgba(74, 222, 128, 0.28)' },
+  css: { color: '#c084fc', bg: 'rgba(192, 132, 252, 0.1)', border: 'rgba(192, 132, 252, 0.28)' },
+  html: { color: '#fb923c', bg: 'rgba(251, 146, 60, 0.1)', border: 'rgba(251, 146, 60, 0.28)' },
+  yaml: { color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.1)', border: 'rgba(244, 63, 94, 0.28)' },
+  rust: { color: '#fb923c', bg: 'rgba(251, 146, 60, 0.1)', border: 'rgba(251, 146, 60, 0.28)' },
+  go: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', border: 'rgba(56, 189, 248, 0.28)' },
+  java: { color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.1)', border: 'rgba(251, 191, 36, 0.28)' },
+  csharp: { color: '#34d399', bg: 'rgba(52, 211, 153, 0.1)', border: 'rgba(52, 211, 153, 0.28)' },
+  ruby: { color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.1)', border: 'rgba(244, 63, 94, 0.28)' },
+  php: { color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.1)', border: 'rgba(167, 139, 250, 0.28)' },
+  other: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.28)' },
 };
 
-export const SnippetCard = ({ snippet, onToggleFavorite, onDelete }: SnippetCardProps) => {
+export const SnippetCard = ({
+  snippet,
+  codeTheme = 'tokyo-night',
+  onToggleFavorite,
+  onDelete,
+  onSelectTheme,
+}: SnippetCardProps) => {
   const [copied, setCopied] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -40,7 +50,19 @@ export const SnippetCard = ({ snippet, onToggleFavorite, onDelete }: SnippetCard
     setTimeout(() => onDelete(snippet.id), 300);
   };
 
-  const langColor = LANG_COLORS[snippet.language] || LANG_COLORS.other;
+  const handleCycleTheme = () => {
+    if (!onSelectTheme) return;
+    const currentIndex = CODE_THEMES.findIndex((t) => t.id === codeTheme);
+    const nextTheme = CODE_THEMES[(currentIndex + 1) % CODE_THEMES.length];
+    onSelectTheme(nextTheme.id);
+  };
+
+  const currentThemeObj = CODE_THEMES.find((t) => t.id === codeTheme) || CODE_THEMES[0];
+  const langStyle = LANG_CONFIG[snippet.language.toLowerCase()] || LANG_CONFIG.other;
+
+  const highlighted = useMemo(() => {
+    return highlightCode(snippet.code, snippet.language);
+  }, [snippet.code, snippet.language]);
 
   return (
     <div className={`snippet-card ${isExiting ? 'snippet-card-exit' : ''}`}>
@@ -49,7 +71,11 @@ export const SnippetCard = ({ snippet, onToggleFavorite, onDelete }: SnippetCard
         <div className="snippet-header-left">
           <span
             className="lang-badge"
-            style={{ '--lang-color': langColor } as React.CSSProperties}
+            style={{
+              '--lang-color': langStyle.color,
+              '--lang-bg': langStyle.bg,
+              '--lang-border': langStyle.border,
+            } as React.CSSProperties}
           >
             <span className="lang-dot" />
             {snippet.language}
@@ -83,16 +109,31 @@ export const SnippetCard = ({ snippet, onToggleFavorite, onDelete }: SnippetCard
         <p className="snippet-description">{snippet.description}</p>
       )}
 
-      {/* Code Block */}
-      <div className="snippet-code-wrapper">
+      {/* Code Block with theme class */}
+      <div className={`snippet-code-wrapper theme-${codeTheme}`}>
         <div className="code-header">
-          <div className="code-dots">
-            <span /><span /><span />
+          <div className="code-dots" aria-hidden="true">
+            <span className="dot-red" title="Close" />
+            <span className="dot-yellow" title="Minimize" />
+            <span className="dot-green" title="Expand" />
           </div>
-          <span className="code-filename">{snippet.language}</span>
+          <div className="code-header-right">
+            <span className="code-filename">{snippet.language}</span>
+            {onSelectTheme && (
+              <button
+                type="button"
+                className="code-theme-badge"
+                onClick={handleCycleTheme}
+                title={`Theme: ${currentThemeObj.name} (Click to change)`}
+              >
+                <span className="theme-mini-dot" style={{ backgroundColor: currentThemeObj.previewColors[0] }} />
+                <span>{currentThemeObj.name}</span>
+              </button>
+            )}
+          </div>
         </div>
         <pre className="snippet-code">
-          <code>{snippet.code}</code>
+          <code dangerouslySetInnerHTML={{ __html: highlighted }} />
         </pre>
       </div>
 

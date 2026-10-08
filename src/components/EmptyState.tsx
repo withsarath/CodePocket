@@ -21,7 +21,7 @@ export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
         )}
       </div>
       <h3 className="empty-title">
-        {hasSnippets ? 'No matches found' : 'Your shelf is empty'}
+        {hasSnippets ? 'No matches found' : 'Your pocket is empty'}
       </h3>
       <p className="empty-description">
         {hasSnippets
