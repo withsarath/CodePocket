@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { Snippet } from '../types';
 import { highlightCode } from '../utils/syntaxHighlighter';
+import { copyTextToClipboard } from '../utils/clipboard';
 import { CODE_THEMES, type CodeThemeId } from '../types/themes';
 
 interface SnippetCardProps {
@@ -45,10 +46,10 @@ const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }>
  *
  * Displays a single code snippet in a clean card layout:
  * - Language badge & title
- * - Star/favorite & delete buttons
+ * - Star/favorite, edit & delete buttons (with safe delete confirmation)
  * - Optional description
  * - Syntax-highlighted code block with macOS-style window dots & theme badge
- * - Tag chips & "Copy" to clipboard button
+ * - Tag chips & "Copy" button with visible success and error feedback
  */
 export const SnippetCard = ({
   snippet,
@@ -58,26 +59,57 @@ export const SnippetCard = ({
   onDelete,
   onSelectTheme,
 }: SnippetCardProps) => {
-  // State to track if the code was recently copied to clipboard
-  const [copied, setCopied] = useState(false);
+  // State for copying status: idle, copied (success), or error
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
 
   // State to trigger the smooth exit animation before removing the card
   const [isExiting, setIsExiting] = useState(false);
 
-  // 1. Copy to clipboard handler
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(snippet.code);
-      setCopied(true);
-      // Reset the "Copied!" feedback after 2 seconds
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy code to clipboard:', err);
+  // State to request explicit confirmation before deleting
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // References for focus management during delete confirmation
+  const deleteBtnRef = useRef<HTMLButtonElement | null>(null);
+  const cancelDeleteBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-focus the cancel button when confirmation dialog appears
+  useEffect(() => {
+    if (showDeleteConfirm) {
+      cancelDeleteBtnRef.current?.focus();
+    }
+  }, [showDeleteConfirm]);
+
+  // Cancel deletion and return focus to the delete trigger button
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    // Return focus to delete button after confirmation dialog closes
+    setTimeout(() => {
+      deleteBtnRef.current?.focus();
+    }, 0);
+  };
+
+  // Keyboard support for delete confirmation dialog (Escape cancels)
+  const handleDeleteConfirmKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      handleCancelDelete();
     }
   };
 
-  // 2. Delete handler with smooth exit animation
-  const handleDelete = () => {
+  // 1. Copy to clipboard handler with error fallback and visible error feedback
+  const handleCopy = async () => {
+    const succeeded = await copyTextToClipboard(snippet.code);
+    if (succeeded) {
+      setCopyState('copied');
+      setTimeout(() => setCopyState('idle'), 2000);
+    } else {
+      setCopyState('error');
+      setTimeout(() => setCopyState('idle'), 3000);
+    }
+  };
+
+  // 2. Confirmed delete handler with smooth exit animation
+  const handleConfirmDelete = () => {
     setIsExiting(true);
     // Wait 300ms for the CSS exit animation to finish, then delete from state
     setTimeout(() => onDelete(snippet.id), 300);
@@ -98,7 +130,7 @@ export const SnippetCard = ({
   const langKey = snippet.language.toLowerCase();
   const langStyle = LANG_CONFIG[langKey] || LANG_CONFIG.other;
 
-  // Memoize syntax highlighting so it doesn't re-run on every render
+  // Memoize syntax highlighting with sanitization so it doesn't re-run on every render
   const highlightedCode = useMemo(() => {
     return highlightCode(snippet.code, snippet.language);
   }, [snippet.code, snippet.language]);
@@ -124,65 +156,97 @@ export const SnippetCard = ({
         </div>
 
         <div className="snippet-actions-top">
-          {/* Favorite toggle star */}
-          <button
-            type="button"
-            onClick={() => onToggleFavorite(snippet.id)}
-            className={`fav-btn ${snippet.isFavorite ? 'fav-active' : ''}`}
-            aria-label="Toggle Favorite"
-            title={snippet.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
-          >
-            {snippet.isFavorite ? '★' : '☆'}
-          </button>
-
-          {/* Edit snippet button */}
-          <button
-            type="button"
-            onClick={() => onEdit(snippet)}
-            className="edit-btn"
-            aria-label="Edit snippet"
-            title="Edit snippet"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          {showDeleteConfirm ? (
+            /* Inline accessible confirmation prompt */
+            <div
+              className="delete-confirm-box"
+              role="alertdialog"
+              aria-label="Confirm snippet deletion"
+              onKeyDown={handleDeleteConfirmKeyDown}
             >
-              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-              <path d="m15 5 4 4" />
-            </svg>
-          </button>
+              <span className="delete-confirm-label">Delete?</span>
+              <button
+                ref={cancelDeleteBtnRef}
+                type="button"
+                className="delete-confirm-cancel-btn"
+                onClick={handleCancelDelete}
+                aria-label="Cancel deletion"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="delete-confirm-btn"
+                onClick={handleConfirmDelete}
+                aria-label={`Confirm delete ${snippet.title}`}
+              >
+                Delete
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Favorite toggle star */}
+              <button
+                type="button"
+                onClick={() => onToggleFavorite(snippet.id)}
+                className={`fav-btn ${snippet.isFavorite ? 'fav-active' : ''}`}
+                aria-label={snippet.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
+                title={snippet.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
+              >
+                {snippet.isFavorite ? '★' : '☆'}
+              </button>
 
-          {/* Delete trash button */}
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="delete-btn"
-            aria-label="Delete snippet"
-            title="Delete snippet"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M3 6h18"/>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-            </svg>
-          </button>
+              {/* Edit snippet button */}
+              <button
+                type="button"
+                onClick={() => onEdit(snippet)}
+                className="edit-btn"
+                aria-label={`Edit ${snippet.title}`}
+                title="Edit snippet"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  <path d="m15 5 4 4" />
+                </svg>
+              </button>
+
+              {/* Delete trash button (triggers confirmation) */}
+              <button
+                ref={deleteBtnRef}
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="delete-btn"
+                aria-label={`Delete ${snippet.title}`}
+                title="Delete snippet"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -222,7 +286,7 @@ export const SnippetCard = ({
           </div>
         </div>
 
-        {/* Highlighted code display */}
+        {/* Highlighted & sanitized code display */}
         <pre className="snippet-code">
           <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </pre>
@@ -238,14 +302,21 @@ export const SnippetCard = ({
           ))}
         </div>
 
-        {/* Copy button with visual feedback */}
+        {/* Copy button with visible success and error states */}
         <button
           type="button"
           onClick={handleCopy}
-          className={`copy-btn ${copied ? 'copied' : ''}`}
-          title="Copy code to clipboard"
+          className={`copy-btn ${copyState === 'copied' ? 'copied' : ''} ${copyState === 'error' ? 'copy-error' : ''}`}
+          title={
+            copyState === 'copied'
+              ? 'Copied to clipboard'
+              : copyState === 'error'
+              ? 'Failed to copy code'
+              : 'Copy code to clipboard'
+          }
+          aria-live="polite"
         >
-          {copied ? (
+          {copyState === 'copied' ? (
             <>
               {/* Checkmark icon */}
               <svg
@@ -262,6 +333,26 @@ export const SnippetCard = ({
                 <path d="M20 6 9 17l-5-5"/>
               </svg>
               Copied!
+            </>
+          ) : copyState === 'error' ? (
+            <>
+              {/* Error warning icon */}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Failed to copy
             </>
           ) : (
             <>

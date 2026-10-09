@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Snippet } from '../types';
 
 export interface AddSnippetModalProps {
@@ -38,6 +38,7 @@ interface ModalContentProps {
   onSave?: (snippet: Snippet) => void;
   onAdd?: (snippet: Snippet) => void;
   editingSnippet?: Snippet | null;
+  firstInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -50,6 +51,7 @@ const SnippetModalContent = ({
   onSave,
   onAdd,
   editingSnippet,
+  firstInputRef,
 }: ModalContentProps) => {
   const isEditing = Boolean(editingSnippet);
 
@@ -152,7 +154,8 @@ const SnippetModalContent = ({
           type="button"
           className="modal-close"
           onClick={onClose}
-          aria-label="Close modal"
+          aria-label="Close modal (Escape)"
+          title="Close modal (Escape)"
         >
           ✕
         </button>
@@ -166,6 +169,7 @@ const SnippetModalContent = ({
             Title *
           </label>
           <input
+            ref={firstInputRef}
             id="snippet-title"
             type="text"
             className="form-input"
@@ -173,7 +177,6 @@ const SnippetModalContent = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            autoFocus
           />
         </div>
 
@@ -265,8 +268,9 @@ const SnippetModalContent = ({
 /**
  * AddSnippetModal (SnippetModal) Component
  *
- * A reusable modal pop-up dialog that contains a form for creating new snippets
- * or updating existing code snippets in CodePocket.
+ * A reusable accessible modal dialog for creating and updating code snippets.
+ * Includes focus trap, sensible focus restoration, keyboard Escape support,
+ * and background scroll lock.
  */
 export const AddSnippetModal = ({
   isOpen,
@@ -275,13 +279,71 @@ export const AddSnippetModal = ({
   onAdd,
   editingSnippet = null,
 }: AddSnippetModalProps) => {
-  // Handle closing modal with Escape key
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const firstInputRef = useRef<HTMLInputElement | null>(null);
+  const triggerElementRef = useRef<HTMLElement | null>(null);
+
+  // Capture the trigger element that opened the modal to restore focus when it closes
+  useEffect(() => {
+    if (isOpen) {
+      triggerElementRef.current = document.activeElement as HTMLElement | null;
+
+      // Focus first input field once modal opens
+      const timer = setTimeout(() => {
+        firstInputRef.current?.focus();
+      }, 50);
+
+      // Lock body scroll while modal is active
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = originalOverflow;
+        // Restore focus to the button that opened the modal
+        triggerElementRef.current?.focus();
+      };
+    }
+  }, [isOpen]);
+
+  // Keyboard navigation: Escape key closes modal & Tab cycles focus within modal
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // 1. Escape to close
       if (event.key === 'Escape') {
+        event.preventDefault();
         onClose();
+        return;
+      }
+
+      // 2. Focus trap: loop Tab through modal's focusable elements
+      if (event.key === 'Tab' && containerRef.current) {
+        const focusableSelectors =
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const focusableElements = Array.from(
+          containerRef.current.querySelectorAll<HTMLElement>(focusableSelectors)
+        );
+
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey) {
+          // Shift + Tab: reverse cycling
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab: forward cycling
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
 
@@ -294,7 +356,7 @@ export const AddSnippetModal = ({
     return null;
   }
 
-  // Close modal when user clicks on the backdrop (outside the modal box)
+  // Close modal when user clicks on the backdrop (outside the modal container)
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -311,6 +373,7 @@ export const AddSnippetModal = ({
     >
       {/* Click inside modal card should NOT trigger handleOverlayClick */}
       <div
+        ref={containerRef}
         key={editingSnippet ? editingSnippet.id : 'create-snippet'}
         className="modal-container"
         onClick={(e) => e.stopPropagation()}
@@ -320,6 +383,7 @@ export const AddSnippetModal = ({
           onSave={onSave}
           onAdd={onAdd}
           editingSnippet={editingSnippet}
+          firstInputRef={firstInputRef}
         />
       </div>
     </div>

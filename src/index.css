@@ -924,6 +924,83 @@ body {
   color: var(--danger);
 }
 
+/* ===== DELETE CONFIRMATION ===== */
+.delete-confirm-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px 3px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-primary);
+  animation: deleteConfirmIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes deleteConfirmIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+.delete-confirm-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  letter-spacing: 0.2px;
+}
+
+.delete-confirm-cancel-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.delete-confirm-cancel-btn:hover {
+  background: var(--border-subtle);
+  color: var(--text-bright);
+  border-color: var(--border-hover);
+}
+
+.delete-confirm-cancel-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.delete-confirm-btn {
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  background: var(--danger);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.delete-confirm-btn:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 10px var(--danger-surface);
+}
+
+.delete-confirm-btn:focus-visible {
+  outline: 2px solid var(--danger);
+  outline-offset: 1px;
+}
+
 /* ===== DESCRIPTION ===== */
 .snippet-description {
   font-size: 13px;
@@ -1456,10 +1533,24 @@ body {
   animation: copyPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+.copy-btn.copy-error {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-surface);
+  font-weight: 600;
+  animation: copyShake 0.35s ease;
+}
+
 @keyframes copyPop {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
+}
+
+@keyframes copyShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
 }
 
 /* ===== EMPTY STATE ===== */
