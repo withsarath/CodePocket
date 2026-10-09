@@ -1,75 +1,138 @@
-# React + TypeScript + Vite
+# 📦 CodePocket
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Your personal pocket for reusable code snippets.**
 
-Currently, two official plugins are available:
+CodePocket is a lightweight, browser-based code snippet manager built with React and TypeScript. It helps developers organize, search, favorite, and manage reusable code snippets in one place, with syntax highlighting and customizable code themes.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Features
 
-## React Compiler
+- **Create Snippets** — Save code snippets with titles, descriptions, programming languages, and tags.
+- **Edit Snippets** — Update existing snippets whenever you need to make changes.
+- **Delete Snippets** — Remove snippets you no longer need.
+- **Search Snippets** — Find snippets by title, description, or tags.
+- **Tag Filtering** — Organize and filter snippets using tags.
+- **Favorites** — Mark important snippets as favorites and filter them separately.
+- **Syntax Highlighting** — Display code with syntax highlighting using highlight.js.
+- **Copy to Clipboard** — Copy code snippets with a single click.
+- **Custom Code Themes** — Choose from six code highlighting themes.
+- **Dark & Light Mode** — Switch between interface themes.
+- **Persistent Storage** — Keep snippets and preferences saved in your browser using LocalStorage.
+- **Responsive Interface** — Use the application across different screen sizes.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+| Technology | Purpose |
+|---|---|
+| React | Building the user interface |
+| TypeScript | Type safety and maintainable code |
+| Vite | Development server and build tooling |
+| CSS | Styling and responsive layouts |
+| highlight.js | Code syntax highlighting |
+| LocalStorage | Client-side data persistence |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Make sure you have the following installed:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- [Node.js](https://nodejs.org/)
+- [pnpm](https://pnpm.io/)
 
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone YOUR_REPOSITORY_URL
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd CodePocket
+   ```
+
+3. Install the dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+4. Start the development server:
+
+   ```bash
+   pnpm dev
+   ```
+
+5. Open the local URL displayed in your terminal.
+
+### Build for Production
+
+Build the application for production:
+
+```bash
+pnpm build
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Preview the production build locally:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+pnpm preview
 ```
+
+## 📂 Project Structure
+
+```text
+CodePocket/
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── AddSnippetModal
+│   │   ├── SnippetCard
+│   │   ├── SearchBar
+│   │   ├── TagFilter
+│   │   ├── CodeThemeSelector
+│   │   └── ThemeToggle
+│   ├── hooks/
+│   │   └── useLocalStorage
+│   ├── types/
+│   ├── utils/
+│   ├── App.tsx
+│   └── main.tsx
+├── package.json
+└── README.md
+```
+
+*Note: The structure above is illustrative. Adjust the folder and file names to match your actual repository.*
+
+## 💾 Data Storage
+
+CodePocket uses the browser's LocalStorage to persist snippets and user preferences.
+
+- Data remains available after refreshing the page.
+- Snippets are stored locally in the current browser.
+- Data is not automatically synchronized across devices.
+- Clearing the browser's site data may remove saved snippets.
+
+## 🧠 What I Learned
+
+- Building reusable and modular React components.
+- Managing application state with React Hooks.
+- Creating reusable custom hooks with TypeScript generics.
+- Implementing search, filtering, and favorites functionality.
+- Working with browser storage and the Clipboard API.
+- Integrating syntax highlighting into a React application.
+- Organizing a frontend project for maintainability.
+
+
+## 👨‍💻 Author
+
+**Sarath**
+
+- GitHub: [@withsarath](https://github.com/withsarath)
+- Portfolio: [withsarath.vercel.app](https://withsarath.vercel.app/)
+
+---
+
+*Built with ❤️ to make reusable code easier to organize and access.*
