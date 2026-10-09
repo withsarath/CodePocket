@@ -10,6 +10,8 @@ interface SnippetCardProps {
   codeTheme?: CodeThemeId;
   /** Callback to toggle star / favorite status */
   onToggleFavorite: (id: string) => void;
+  /** Callback to edit the snippet */
+  onEdit: (snippet: Snippet) => void;
   /** Callback to delete the snippet */
   onDelete: (id: string) => void;
   /** Callback to switch code theme */
@@ -52,6 +54,7 @@ export const SnippetCard = ({
   snippet,
   codeTheme = 'tokyo-night',
   onToggleFavorite,
+  onEdit,
   onDelete,
   onSelectTheme,
 }: SnippetCardProps) => {
@@ -130,6 +133,30 @@ export const SnippetCard = ({
             title={snippet.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
           >
             {snippet.isFavorite ? '★' : '☆'}
+          </button>
+
+          {/* Edit snippet button */}
+          <button
+            type="button"
+            onClick={() => onEdit(snippet)}
+            className="edit-btn"
+            aria-label="Edit snippet"
+            title="Edit snippet"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
           </button>
 
           {/* Delete trash button */}

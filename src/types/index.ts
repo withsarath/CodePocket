@@ -26,4 +26,7 @@ export interface Snippet {
 
   /** Timestamp (in milliseconds) when the snippet was created */
   createdAt: number;
+
+  /** Optional timestamp (in milliseconds) when the snippet was last updated */
+  updatedAt?: number;
 }

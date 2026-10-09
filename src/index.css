@@ -889,6 +889,7 @@ body {
   transform: scale(0.85);
 }
 
+.edit-btn,
 .delete-btn {
   display: flex;
   align-items: center;
@@ -901,11 +902,21 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
-  opacity: 0;
 }
 
+.snippet-card:hover .edit-btn,
 .snippet-card:hover .delete-btn {
-  opacity: 1;
+  color: var(--text-secondary);
+}
+
+.edit-btn:hover {
+  background: var(--accent-surface);
+  color: var(--text-bright);
+}
+
+.edit-btn:active,
+.delete-btn:active {
+  transform: scale(0.9);
 }
 
 .delete-btn:hover {

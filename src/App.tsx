@@ -52,6 +52,7 @@ export default function App() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
 
   // -------------------------------------------------------------
   // 3. SIDE EFFECTS
@@ -152,9 +153,35 @@ export default function App() {
     );
   };
 
-  // Add a newly created snippet to the very top of the list
-  const handleAddSnippet = (newSnippet: Snippet) => {
-    setSnippets((previousSnippets) => [newSnippet, ...previousSnippets]);
+  // Open modal to create a new snippet
+  const handleOpenCreateModal = () => {
+    setEditingSnippet(null);
+    setIsModalOpen(true);
+  };
+
+  // Open modal to edit an existing snippet
+  const handleOpenEditModal = (snippet: Snippet) => {
+    setEditingSnippet(snippet);
+    setIsModalOpen(true);
+  };
+
+  // Close modal and reset editing state
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingSnippet(null);
+  };
+
+  // Save a snippet (handles both creating a new snippet and updating an existing one)
+  const handleSaveSnippet = (snippetToSave: Snippet) => {
+    setSnippets((previousSnippets) => {
+      const exists = previousSnippets.some((s) => s.id === snippetToSave.id);
+      if (exists) {
+        return previousSnippets.map((s) =>
+          s.id === snippetToSave.id ? snippetToSave : s
+        );
+      }
+      return [snippetToSave, ...previousSnippets];
+    });
   };
 
   // Toggle selection of a tag filter (click on selects it, click again unselects it)
@@ -226,7 +253,7 @@ export default function App() {
               id="add-snippet-btn"
               type="button"
               className="add-btn"
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleOpenCreateModal}
             >
               <span className="add-btn-icon">+</span>
               <span className="add-btn-text">New Snippet</span>
@@ -266,6 +293,7 @@ export default function App() {
                 snippet={snippet}
                 codeTheme={codeTheme}
                 onToggleFavorite={handleToggleFavorite}
+                onEdit={handleOpenEditModal}
                 onDelete={handleDeleteSnippet}
                 onSelectTheme={setCodeTheme}
               />
@@ -282,8 +310,9 @@ export default function App() {
       {/* ================= MODAL DIALOG ================= */}
       <AddSnippetModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAdd={handleAddSnippet}
+        onClose={handleCloseModal}
+        onSave={handleSaveSnippet}
+        editingSnippet={editingSnippet}
       />
     </div>
   );
