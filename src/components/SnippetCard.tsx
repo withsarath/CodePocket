@@ -4,13 +4,22 @@ import { highlightCode } from '../utils/syntaxHighlighter';
 import { CODE_THEMES, type CodeThemeId } from '../types/themes';
 
 interface SnippetCardProps {
+  /** The snippet data object to display */
   snippet: Snippet;
+  /** Active syntax theme (e.g. 'tokyo-night') */
   codeTheme?: CodeThemeId;
+  /** Callback to toggle star / favorite status */
   onToggleFavorite: (id: string) => void;
+  /** Callback to delete the snippet */
   onDelete: (id: string) => void;
+  /** Callback to switch code theme */
   onSelectTheme?: (theme: CodeThemeId) => void;
 }
 
+/**
+ * Visual styling lookup table for language badges.
+ * Maps each language name to a complementary badge color, background, and border.
+ */
 const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
   typescript: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', border: 'rgba(56, 189, 248, 0.28)' },
   javascript: { color: '#facc15', bg: 'rgba(250, 204, 21, 0.1)', border: 'rgba(250, 204, 21, 0.28)' },
@@ -29,6 +38,16 @@ const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }>
   other: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.28)' },
 };
 
+/**
+ * SnippetCard Component
+ *
+ * Displays a single code snippet in a clean card layout:
+ * - Language badge & title
+ * - Star/favorite & delete buttons
+ * - Optional description
+ * - Syntax-highlighted code block with macOS-style window dots & theme badge
+ * - Tag chips & "Copy" to clipboard button
+ */
 export const SnippetCard = ({
   snippet,
   codeTheme = 'tokyo-night',
@@ -36,39 +55,57 @@ export const SnippetCard = ({
   onDelete,
   onSelectTheme,
 }: SnippetCardProps) => {
+  // State to track if the code was recently copied to clipboard
   const [copied, setCopied] = useState(false);
+
+  // State to trigger the smooth exit animation before removing the card
   const [isExiting, setIsExiting] = useState(false);
 
+  // 1. Copy to clipboard handler
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(snippet.code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(snippet.code);
+      setCopied(true);
+      // Reset the "Copied!" feedback after 2 seconds
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy code to clipboard:', err);
+    }
   };
 
+  // 2. Delete handler with smooth exit animation
   const handleDelete = () => {
     setIsExiting(true);
+    // Wait 300ms for the CSS exit animation to finish, then delete from state
     setTimeout(() => onDelete(snippet.id), 300);
   };
 
+  // 3. Cycle to next code theme when user clicks the small theme pill on the card
   const handleCycleTheme = () => {
     if (!onSelectTheme) return;
-    const currentIndex = CODE_THEMES.findIndex((t) => t.id === codeTheme);
-    const nextTheme = CODE_THEMES[(currentIndex + 1) % CODE_THEMES.length];
+    const currentIndex = CODE_THEMES.findIndex((theme) => theme.id === codeTheme);
+    // Use modulo operator (%) to loop back to 0 when reaching the end of the list
+    const nextIndex = (currentIndex + 1) % CODE_THEMES.length;
+    const nextTheme = CODE_THEMES[nextIndex];
     onSelectTheme(nextTheme.id);
   };
 
-  const currentThemeObj = CODE_THEMES.find((t) => t.id === codeTheme) || CODE_THEMES[0];
-  const langStyle = LANG_CONFIG[snippet.language.toLowerCase()] || LANG_CONFIG.other;
+  // Find theme details and language color styles
+  const currentThemeObj = CODE_THEMES.find((theme) => theme.id === codeTheme) || CODE_THEMES[0];
+  const langKey = snippet.language.toLowerCase();
+  const langStyle = LANG_CONFIG[langKey] || LANG_CONFIG.other;
 
-  const highlighted = useMemo(() => {
+  // Memoize syntax highlighting so it doesn't re-run on every render
+  const highlightedCode = useMemo(() => {
     return highlightCode(snippet.code, snippet.language);
   }, [snippet.code, snippet.language]);
 
   return (
     <div className={`snippet-card ${isExiting ? 'snippet-card-exit' : ''}`}>
-      {/* Header */}
+      {/* Card Header: Language badge, Title, and Action buttons */}
       <div className="snippet-header">
         <div className="snippet-header-left">
+          {/* Language badge with custom CSS color variables */}
           <span
             className="lang-badge"
             style={{
@@ -82,20 +119,38 @@ export const SnippetCard = ({
           </span>
           <h3 className="snippet-title">{snippet.title}</h3>
         </div>
+
         <div className="snippet-actions-top">
+          {/* Favorite toggle star */}
           <button
+            type="button"
             onClick={() => onToggleFavorite(snippet.id)}
             className={`fav-btn ${snippet.isFavorite ? 'fav-active' : ''}`}
             aria-label="Toggle Favorite"
+            title={snippet.isFavorite ? 'Remove from favorites' : 'Mark as favorite'}
           >
             {snippet.isFavorite ? '★' : '☆'}
           </button>
+
+          {/* Delete trash button */}
           <button
+            type="button"
             onClick={handleDelete}
             className="delete-btn"
             aria-label="Delete snippet"
+            title="Delete snippet"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M3 6h18"/>
               <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
               <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -104,21 +159,25 @@ export const SnippetCard = ({
         </div>
       </div>
 
-      {/* Description */}
+      {/* Optional Description */}
       {snippet.description && (
         <p className="snippet-description">{snippet.description}</p>
       )}
 
-      {/* Code Block with theme class */}
+      {/* Code Block with active theme class applied */}
       <div className={`snippet-code-wrapper theme-${codeTheme}`}>
         <div className="code-header">
+          {/* macOS window control decoration dots */}
           <div className="code-dots" aria-hidden="true">
             <span className="dot-red" title="Close" />
             <span className="dot-yellow" title="Minimize" />
             <span className="dot-green" title="Expand" />
           </div>
+
           <div className="code-header-right">
             <span className="code-filename">{snippet.language}</span>
+
+            {/* Quick theme pill button: click to cycle through themes */}
             {onSelectTheme && (
               <button
                 type="button"
@@ -126,18 +185,23 @@ export const SnippetCard = ({
                 onClick={handleCycleTheme}
                 title={`Theme: ${currentThemeObj.name} (Click to change)`}
               >
-                <span className="theme-mini-dot" style={{ backgroundColor: currentThemeObj.previewColors[0] }} />
+                <span
+                  className="theme-mini-dot"
+                  style={{ backgroundColor: currentThemeObj.previewColors[0] }}
+                />
                 <span>{currentThemeObj.name}</span>
               </button>
             )}
           </div>
         </div>
+
+        {/* Highlighted code display */}
         <pre className="snippet-code">
-          <code dangerouslySetInnerHTML={{ __html: highlighted }} />
+          <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </pre>
       </div>
 
-      {/* Footer */}
+      {/* Card Footer: Tags and Copy button */}
       <div className="snippet-footer">
         <div className="snippet-tags">
           {snippet.tags.map((tag) => (
@@ -146,18 +210,49 @@ export const SnippetCard = ({
             </span>
           ))}
         </div>
+
+        {/* Copy button with visual feedback */}
         <button
+          type="button"
           onClick={handleCopy}
           className={`copy-btn ${copied ? 'copied' : ''}`}
+          title="Copy code to clipboard"
         >
           {copied ? (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              {/* Checkmark icon */}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
               Copied!
             </>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              {/* Copy document icon */}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
               Copy
             </>
           )}

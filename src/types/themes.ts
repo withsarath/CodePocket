@@ -1,12 +1,35 @@
-export type CodeThemeId = 'tokyo-night' | 'one-dark' | 'dracula' | 'monokai' | 'github-dark' | 'github-light';
+/**
+ * Allowed theme identifiers for snippet code blocks.
+ * Users can pick any of these themes to change code syntax highlighting colors.
+ */
+export type CodeThemeId =
+  | 'tokyo-night'
+  | 'one-dark'
+  | 'dracula'
+  | 'monokai'
+  | 'github-dark'
+  | 'github-light';
 
+/**
+ * Definition of a code syntax theme.
+ */
 export interface CodeTheme {
+  /** Unique ID matching the CSS class name prefix (e.g., 'tokyo-night') */
   id: CodeThemeId;
+
+  /** User-friendly display name (e.g., 'Tokyo Night') */
   name: string;
+
+  /** Three sample hex colors used to show a mini preview in the dropdown */
   previewColors: [string, string, string];
+
+  /** Editor background color associated with this theme */
   bg: string;
 }
 
+/**
+ * List of all available code themes in CodePocket.
+ */
 export const CODE_THEMES: CodeTheme[] = [
   {
     id: 'tokyo-night',
