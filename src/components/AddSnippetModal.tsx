@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { Snippet } from '../types';
 
 export interface AddSnippetModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onSave: (snippet: Snippet) => void;
   editingSnippet?: Snippet | null;
@@ -27,7 +26,6 @@ const LANGUAGES = [
 ];
 
 export const AddSnippetModal = ({
-  isOpen,
   onClose,
   onSave,
   editingSnippet = null,
@@ -41,8 +39,6 @@ export const AddSnippetModal = ({
   const [tagsInput, setTagsInput] = useState(editingSnippet?.tags.join(', ') ?? '');
 
   useEffect(() => {
-    if (!isOpen) return;
-
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -57,11 +53,7 @@ export const AddSnippetModal = ({
       document.body.style.overflow = originalOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
+  }, [onClose]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();

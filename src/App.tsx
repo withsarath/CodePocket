@@ -80,18 +80,10 @@ export default function App() {
   }, [snippets, searchQuery, selectedTags, showFavoritesOnly]);
 
   const handleToggleAppTheme = () => {
-    setAppTheme((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-
-      // Auto-switch code theme to a good match for the new app theme
-      if (next === 'light' && codeTheme === 'tokyo-night') {
-        setCodeTheme('github-light');
-      } else if (next === 'dark' && codeTheme === 'github-light') {
-        setCodeTheme('tokyo-night');
-      }
-
-      return next;
-    });
+    const next = appTheme === 'dark' ? 'light' : 'dark';
+    setAppTheme(next);
+    if (next === 'light' && codeTheme === 'tokyo-night') setCodeTheme('github-light');
+    else if (next === 'dark' && codeTheme === 'github-light') setCodeTheme('tokyo-night');
   };
 
   const handleToggleFavorite = (snippetId: string) => {
@@ -244,13 +236,14 @@ export default function App() {
         )}
       </main>
 
-      <AddSnippetModal
-        key={editingSnippet?.id || 'new'}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveSnippet}
-        editingSnippet={editingSnippet}
-      />
+      {isModalOpen && (
+        <AddSnippetModal
+          key={editingSnippet?.id ?? 'new'}
+          onClose={handleCloseModal}
+          onSave={handleSaveSnippet}
+          editingSnippet={editingSnippet}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,70 @@
+/* ===== GLOBAL BASE ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* ===== APP LAYOUT ===== */
+.app {
+  position: relative;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  transition: background-color var(--transition-base);
+}
+
+.ambient-glow {
+  position: fixed;
+  top: -200px;
+  left: -100px;
+  width: 600px;
+  height: 600px;
+  background: var(--ambient-glow-1);
+  pointer-events: none;
+  z-index: 0;
+  animation: float 20s ease-in-out infinite;
+  transition: background var(--transition-slow);
+}
+
+.ambient-glow-2 {
+  position: fixed;
+  bottom: -200px;
+  right: -100px;
+  width: 500px;
+  height: 500px;
+  background: var(--ambient-glow-2);
+  pointer-events: none;
+  z-index: 0;
+  animation: float 25s ease-in-out infinite reverse;
+  transition: background var(--transition-slow);
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(30px, -20px); }
+  50% { transform: translate(-20px, 30px); }
+  75% { transform: translate(20px, 20px); }
+}
+
+.main-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+@media (min-width: 768px) {
+  .main-container {
+    padding: 48px 40px 80px;
+  }
+}

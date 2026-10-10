@@ -1,0 +1,308 @@
+/* ===== CODE BLOCK CONTAINER ===== */
+.snippet-code-wrapper {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--bg-code);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--code-header-border, var(--border-primary));
+  background: var(--code-header-bg, rgba(255, 255, 255, 0.02));
+}
+
+.code-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code-dots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+}
+
+.dot-red {
+  background: #ff5f56;
+  box-shadow: 0 0 6px rgba(255, 95, 86, 0.45);
+}
+
+.dot-yellow {
+  background: #ffbd2e;
+  box-shadow: 0 0 6px rgba(255, 189, 46, 0.45);
+}
+
+.dot-green {
+  background: #27c93f;
+  box-shadow: 0 0 6px rgba(39, 201, 63, 0.45);
+}
+
+.snippet-card:hover .code-dots span {
+  filter: brightness(1.15);
+}
+
+.code-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--code-filename-color, var(--text-muted));
+  text-transform: lowercase;
+}
+
+.code-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.code-theme-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--badge-border, rgba(255, 255, 255, 0.08));
+  background: var(--badge-bg, rgba(255, 255, 255, 0.03));
+  color: var(--badge-color, var(--text-muted));
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.code-theme-badge:hover {
+  background: var(--badge-hover-bg, rgba(255, 255, 255, 0.08));
+  color: var(--badge-hover-color, var(--text-secondary));
+  border-color: var(--badge-hover-border, rgba(255, 255, 255, 0.16));
+}
+
+.theme-mini-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.snippet-code {
+  padding: 14px 16px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--c-foreground, #e2e8f0);
+  max-height: 200px;
+}
+
+.snippet-code code {
+  white-space: pre;
+  font-family: inherit;
+}
+
+/* Scrollbar for code */
+.snippet-code::-webkit-scrollbar {
+  height: 4px;
+}
+
+.snippet-code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.snippet-code::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+/* ===== HIGHLIGHT.JS SYNTAX TOKENS (DEFINED ONCE) ===== */
+.snippet-code-wrapper [class^="hljs-"] {
+  background: none;
+}
+
+.snippet-code-wrapper .hljs-comment,
+.snippet-code-wrapper .hljs-quote {
+  color: var(--c-comment);
+  font-style: italic;
+}
+
+.snippet-code-wrapper .hljs-punctuation {
+  color: var(--c-punctuation, var(--c-foreground));
+}
+
+.snippet-code-wrapper .hljs-keyword,
+.snippet-code-wrapper .hljs-selector-tag {
+  color: var(--c-keyword);
+  font-weight: 600;
+}
+
+.snippet-code-wrapper .hljs-function,
+.snippet-code-wrapper .hljs-title,
+.snippet-code-wrapper .hljs-title.function_ {
+  color: var(--c-function);
+  font-weight: 600;
+}
+
+.snippet-code-wrapper .hljs-string,
+.snippet-code-wrapper .hljs-doctag {
+  color: var(--c-string);
+}
+
+.snippet-code-wrapper .hljs-number,
+.snippet-code-wrapper .hljs-literal {
+  color: var(--c-number);
+  font-weight: 500;
+}
+
+.snippet-code-wrapper .hljs-type,
+.snippet-code-wrapper .hljs-built_in,
+.snippet-code-wrapper .hljs-class {
+  color: var(--c-type);
+}
+
+.snippet-code-wrapper .hljs-operator {
+  color: var(--c-operator);
+}
+
+.snippet-code-wrapper .hljs-attr,
+.snippet-code-wrapper .hljs-property,
+.snippet-code-wrapper .hljs-attribute {
+  color: var(--c-property);
+}
+
+.snippet-code-wrapper .hljs-variable,
+.snippet-code-wrapper .hljs-params,
+.snippet-code-wrapper .hljs-template-variable {
+  color: var(--c-variable);
+}
+
+/* ===== THEMES (VARIABLES ONLY) ===== */
+
+/* 1. Tokyo Night */
+.theme-tokyo-night {
+  background: #16161e;
+  border-color: rgba(122, 162, 247, 0.28);
+  --code-header-bg: #13131a;
+  --code-header-border: rgba(122, 162, 247, 0.18);
+  --c-foreground: #c0caf5;
+  --c-comment: #565f89;
+  --c-punctuation: #89ddff;
+  --c-keyword: #bb9af7;
+  --c-function: #7aa2f7;
+  --c-string: #9ece6a;
+  --c-number: #ff9e64;
+  --c-type: #2ac3de;
+  --c-operator: #89ddff;
+  --c-property: #f7768e;
+  --c-variable: #e0af68;
+}
+
+/* 2. One Dark */
+.theme-one-dark {
+  background: #1e1e24;
+  border-color: rgba(97, 175, 239, 0.28);
+  --code-header-bg: #18181e;
+  --code-header-border: rgba(97, 175, 239, 0.18);
+  --c-foreground: #abb2bf;
+  --c-comment: #5c6370;
+  --c-punctuation: #abb2bf;
+  --c-keyword: #c678dd;
+  --c-function: #61afef;
+  --c-string: #98c379;
+  --c-number: #d19a66;
+  --c-type: #e5c07b;
+  --c-operator: #56b6c2;
+  --c-property: #e06c75;
+  --c-variable: #e5c07b;
+}
+
+/* 3. Dracula */
+.theme-dracula {
+  background: #1e1f29;
+  border-color: rgba(189, 147, 249, 0.28);
+  --code-header-bg: #181921;
+  --code-header-border: rgba(189, 147, 249, 0.18);
+  --c-foreground: #f8f8f2;
+  --c-comment: #6272a4;
+  --c-punctuation: #f8f8f2;
+  --c-keyword: #ff79c6;
+  --c-function: #50fa7b;
+  --c-string: #f1fa8c;
+  --c-number: #bd93f9;
+  --c-type: #8be9fd;
+  --c-operator: #ff79c6;
+  --c-property: #ff5555;
+  --c-variable: #ffb86c;
+}
+
+/* 4. Monokai */
+.theme-monokai {
+  background: #1e1f1c;
+  border-color: rgba(249, 38, 114, 0.28);
+  --code-header-bg: #181916;
+  --code-header-border: rgba(249, 38, 114, 0.18);
+  --c-foreground: #f8f8f2;
+  --c-comment: #75715e;
+  --c-punctuation: #f8f8f2;
+  --c-keyword: #f92672;
+  --c-function: #a6e22e;
+  --c-string: #e6db74;
+  --c-number: #ae81ff;
+  --c-type: #66d9ef;
+  --c-operator: #f92672;
+  --c-property: #fd971f;
+  --c-variable: #fd971f;
+}
+
+/* 5. GitHub Dark */
+.theme-github-dark {
+  background: #0d1117;
+  border-color: rgba(121, 192, 255, 0.28);
+  --code-header-bg: #090d13;
+  --code-header-border: rgba(121, 192, 255, 0.18);
+  --c-foreground: #c9d1d9;
+  --c-comment: #8b949e;
+  --c-punctuation: #c9d1d9;
+  --c-keyword: #ff7b72;
+  --c-function: #79c0ff;
+  --c-string: #7ee787;
+  --c-number: #ffa657;
+  --c-type: #d2a8ff;
+  --c-operator: #79c0ff;
+  --c-property: #7ee787;
+  --c-variable: #ffa657;
+}
+
+/* 6. GitHub Light */
+.theme-github-light {
+  background: #f6f8fa;
+  border-color: rgba(9, 105, 218, 0.28);
+  --code-header-bg: #ffffff;
+  --code-header-border: rgba(0, 0, 0, 0.08);
+  --code-filename-color: #57606a;
+  --c-foreground: #24292f;
+  --c-comment: #6e7781;
+  --c-punctuation: #24292f;
+  --c-keyword: #cf222e;
+  --c-function: #8250df;
+  --c-string: #0a3069;
+  --c-number: #0550ae;
+  --c-type: #953800;
+  --c-operator: #cf222e;
+  --c-property: #116329;
+  --c-variable: #953800;
+  --badge-border: rgba(0, 0, 0, 0.12);
+  --badge-bg: rgba(0, 0, 0, 0.04);
+  --badge-color: #57606a;
+  --badge-hover-bg: rgba(0, 0, 0, 0.08);
+  --badge-hover-color: #24292f;
+  --badge-hover-border: rgba(0, 0, 0, 0.2);
+}
