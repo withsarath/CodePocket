@@ -5,24 +5,14 @@ import { copyTextToClipboard } from '../utils/clipboard';
 import { CODE_THEMES, type CodeThemeId } from '../types/themes';
 
 interface SnippetCardProps {
-  /** The snippet data object to display */
   snippet: Snippet;
-  /** Active syntax theme (e.g. 'tokyo-night') */
   codeTheme?: CodeThemeId;
-  /** Callback to toggle star / favorite status */
   onToggleFavorite: (id: string) => void;
-  /** Callback to edit the snippet */
   onEdit: (snippet: Snippet) => void;
-  /** Callback to delete the snippet */
   onDelete: (id: string) => void;
-  /** Callback to switch code theme */
   onSelectTheme?: (theme: CodeThemeId) => void;
 }
 
-/**
- * Visual styling lookup table for language badges.
- * Maps each language name to a complementary badge color, background, and border.
- */
 const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }> = {
   typescript: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.1)', border: 'rgba(56, 189, 248, 0.28)' },
   javascript: { color: '#facc15', bg: 'rgba(250, 204, 21, 0.1)', border: 'rgba(250, 204, 21, 0.28)' },
@@ -41,16 +31,6 @@ const LANG_CONFIG: Record<string, { color: string; bg: string; border: string }>
   other: { color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.28)' },
 };
 
-/**
- * SnippetCard Component
- *
- * Displays a single code snippet in a clean card layout:
- * - Language badge & title
- * - Star/favorite, edit & delete buttons (with safe delete confirmation)
- * - Optional description
- * - Syntax-highlighted code block with macOS-style window dots & theme badge
- * - Tag chips & "Copy" button with visible success and error feedback
- */
 export const SnippetCard = ({
   snippet,
   codeTheme = 'tokyo-night',
@@ -59,36 +39,26 @@ export const SnippetCard = ({
   onDelete,
   onSelectTheme,
 }: SnippetCardProps) => {
-  // State for copying status: idle, copied (success), or error
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
-
-  // State to trigger the smooth exit animation before removing the card
   const [isExiting, setIsExiting] = useState(false);
-
-  // State to request explicit confirmation before deleting
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // References for focus management during delete confirmation
   const deleteBtnRef = useRef<HTMLButtonElement | null>(null);
   const cancelDeleteBtnRef = useRef<HTMLButtonElement | null>(null);
 
-  // Auto-focus the cancel button when confirmation dialog appears
   useEffect(() => {
     if (showDeleteConfirm) {
       cancelDeleteBtnRef.current?.focus();
     }
   }, [showDeleteConfirm]);
 
-  // Cancel deletion and return focus to the delete trigger button
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
-    // Return focus to delete button after confirmation dialog closes
     setTimeout(() => {
       deleteBtnRef.current?.focus();
     }, 0);
   };
 
-  // Keyboard support for delete confirmation dialog (Escape cancels)
   const handleDeleteConfirmKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       event.stopPropagation();
@@ -96,7 +66,6 @@ export const SnippetCard = ({
     }
   };
 
-  // 1. Copy to clipboard handler with error fallback and visible error feedback
   const handleCopy = async () => {
     const succeeded = await copyTextToClipboard(snippet.code);
     if (succeeded) {
@@ -108,39 +77,30 @@ export const SnippetCard = ({
     }
   };
 
-  // 2. Confirmed delete handler with smooth exit animation
   const handleConfirmDelete = () => {
     setIsExiting(true);
-    // Wait 300ms for the CSS exit animation to finish, then delete from state
     setTimeout(() => onDelete(snippet.id), 300);
   };
 
-  // 3. Cycle to next code theme when user clicks the small theme pill on the card
   const handleCycleTheme = () => {
     if (!onSelectTheme) return;
     const currentIndex = CODE_THEMES.findIndex((theme) => theme.id === codeTheme);
-    // Use modulo operator (%) to loop back to 0 when reaching the end of the list
     const nextIndex = (currentIndex + 1) % CODE_THEMES.length;
-    const nextTheme = CODE_THEMES[nextIndex];
-    onSelectTheme(nextTheme.id);
+    onSelectTheme(CODE_THEMES[nextIndex].id);
   };
 
-  // Find theme details and language color styles
   const currentThemeObj = CODE_THEMES.find((theme) => theme.id === codeTheme) || CODE_THEMES[0];
   const langKey = snippet.language.toLowerCase();
   const langStyle = LANG_CONFIG[langKey] || LANG_CONFIG.other;
 
-  // Memoize syntax highlighting with sanitization so it doesn't re-run on every render
   const highlightedCode = useMemo(() => {
     return highlightCode(snippet.code, snippet.language);
   }, [snippet.code, snippet.language]);
 
   return (
     <div className={`snippet-card ${isExiting ? 'snippet-card-exit' : ''}`}>
-      {/* Card Header: Language badge, Title, and Action buttons */}
       <div className="snippet-header">
         <div className="snippet-header-left">
-          {/* Language badge with custom CSS color variables */}
           <span
             className="lang-badge"
             style={{
@@ -157,7 +117,6 @@ export const SnippetCard = ({
 
         <div className="snippet-actions-top">
           {showDeleteConfirm ? (
-            /* Inline accessible confirmation prompt */
             <div
               className="delete-confirm-box"
               role="alertdialog"
@@ -185,7 +144,6 @@ export const SnippetCard = ({
             </div>
           ) : (
             <>
-              {/* Favorite toggle star */}
               <button
                 type="button"
                 onClick={() => onToggleFavorite(snippet.id)}
@@ -196,7 +154,6 @@ export const SnippetCard = ({
                 {snippet.isFavorite ? '★' : '☆'}
               </button>
 
-              {/* Edit snippet button */}
               <button
                 type="button"
                 onClick={() => onEdit(snippet)}
@@ -220,7 +177,6 @@ export const SnippetCard = ({
                 </svg>
               </button>
 
-              {/* Delete trash button (triggers confirmation) */}
               <button
                 ref={deleteBtnRef}
                 type="button"
@@ -250,15 +206,12 @@ export const SnippetCard = ({
         </div>
       </div>
 
-      {/* Optional Description */}
       {snippet.description && (
         <p className="snippet-description">{snippet.description}</p>
       )}
 
-      {/* Code Block with active theme class applied */}
       <div className={`snippet-code-wrapper theme-${codeTheme}`}>
         <div className="code-header">
-          {/* macOS window control decoration dots */}
           <div className="code-dots" aria-hidden="true">
             <span className="dot-red" title="Close" />
             <span className="dot-yellow" title="Minimize" />
@@ -268,7 +221,6 @@ export const SnippetCard = ({
           <div className="code-header-right">
             <span className="code-filename">{snippet.language}</span>
 
-            {/* Quick theme pill button: click to cycle through themes */}
             {onSelectTheme && (
               <button
                 type="button"
@@ -286,13 +238,11 @@ export const SnippetCard = ({
           </div>
         </div>
 
-        {/* Highlighted & sanitized code display */}
         <pre className="snippet-code">
           <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
         </pre>
       </div>
 
-      {/* Card Footer: Tags and Copy button */}
       <div className="snippet-footer">
         <div className="snippet-tags">
           {snippet.tags.map((tag) => (
@@ -302,7 +252,6 @@ export const SnippetCard = ({
           ))}
         </div>
 
-        {/* Copy button with visible success and error states */}
         <button
           type="button"
           onClick={handleCopy}
@@ -318,7 +267,6 @@ export const SnippetCard = ({
         >
           {copyState === 'copied' ? (
             <>
-              {/* Checkmark icon */}
               <svg
                 width="14"
                 height="14"
@@ -336,7 +284,6 @@ export const SnippetCard = ({
             </>
           ) : copyState === 'error' ? (
             <>
-              {/* Error warning icon */}
               <svg
                 width="14"
                 height="14"
@@ -356,7 +303,6 @@ export const SnippetCard = ({
             </>
           ) : (
             <>
-              {/* Copy document icon */}
               <svg
                 width="14"
                 height="14"

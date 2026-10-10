@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 
-// Custom Hooks & Initial Data
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { initialSnippets } from './data/mockSnippets';
 
-// UI Components
 import { SnippetCard } from './components/SnippetCard';
 import { SearchBar } from './components/SearchBar';
 import { TagFilter } from './components/TagFilter';
@@ -13,23 +11,10 @@ import { EmptyState } from './components/EmptyState';
 import { CodeThemeSelector } from './components/CodeThemeSelector';
 import { ThemeToggle, type AppThemeMode } from './components/ThemeToggle';
 
-// Types
 import type { Snippet } from './types';
 import type { CodeThemeId } from './types/themes';
 
-/**
- * Main Application Component: CodePocket
- *
- * This is the root component that ties all parts of the app together:
- * - Manages snippet storage in localStorage
- * - Manages application dark/light mode and code syntax color themes
- * - Handles real-time search, tag filtering, and favorites filtering
- * - Displays the snippet cards grid and creation modal
- */
 export default function App() {
-  // -------------------------------------------------------------
-  // 1. PERSISTED STATE (Stored in the browser's localStorage)
-  // -------------------------------------------------------------
   const [snippets, setSnippets] = useLocalStorage<Snippet[]>(
     'codepocket-snippets',
     initialSnippets
@@ -45,24 +30,16 @@ export default function App() {
     'tokyo-night'
   );
 
-  // -------------------------------------------------------------
-  // 2. TEMPORARY UI STATE (Resets on page reload)
-  // -------------------------------------------------------------
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
 
-  // -------------------------------------------------------------
-  // 3. SIDE EFFECTS
-  // -------------------------------------------------------------
-  // Update the HTML document's data-theme attribute whenever appTheme changes
-  // This allows CSS to switch between dark and light color palettes
+  // Apply the app theme to the document and update the browser theme color
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', appTheme);
 
-    // Update browser tab/mobile address bar theme color
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute(
@@ -72,144 +49,109 @@ export default function App() {
     }
   }, [appTheme]);
 
-  // -------------------------------------------------------------
-  // 4. COMPUTED DATA (Calculated automatically when state changes)
-  // -------------------------------------------------------------
-
-  // Collect a sorted list of all unique tags across all snippets
+  // Collect all unique tags from every snippet
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-
-    // Add each snippet's tags into a Set (Sets automatically ignore duplicates)
     snippets.forEach((snippet) => {
       snippet.tags.forEach((tag) => tagSet.add(tag));
     });
-
-    // Convert Set back to an array and sort alphabetically
     return Array.from(tagSet).sort();
   }, [snippets]);
 
-  // Filter snippets according to search query, selected tags, and favorite filter
+  // Filter snippets by search, tags, and favorites
   const filteredSnippets = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
     return snippets.filter((snippet) => {
-      // Check 1: Search match (title, description, or tags)
       const matchesSearch =
         !query ||
         snippet.title.toLowerCase().includes(query) ||
         snippet.description.toLowerCase().includes(query) ||
         snippet.tags.some((tag) => tag.toLowerCase().includes(query));
 
-      // Check 2: Tag match (must match at least one selected tag if any are selected)
       const matchesTags =
         selectedTags.length === 0 ||
         selectedTags.some((selectedTag) => snippet.tags.includes(selectedTag));
 
-      // Check 3: Favorite match (must be favorite if "Favorites" filter is on)
       const matchesFavorite = !showFavoritesOnly || snippet.isFavorite;
 
-      // Keep this snippet only if it passes all three conditions
       return matchesSearch && matchesTags && matchesFavorite;
     });
   }, [snippets, searchQuery, selectedTags, showFavoritesOnly]);
 
-  // -------------------------------------------------------------
-  // 5. EVENT HANDLERS
-  // -------------------------------------------------------------
-
-  // Switch between Dark mode and Light mode
   const handleToggleAppTheme = () => {
-    setAppTheme((previousTheme) => {
-      const nextTheme = previousTheme === 'dark' ? 'light' : 'dark';
+    setAppTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
 
-      // Automatically pair recommended default code themes for best contrast
-      if (nextTheme === 'light' && codeTheme === 'tokyo-night') {
+      // Auto-switch code theme to a good match for the new app theme
+      if (next === 'light' && codeTheme === 'tokyo-night') {
         setCodeTheme('github-light');
-      } else if (nextTheme === 'dark' && codeTheme === 'github-light') {
+      } else if (next === 'dark' && codeTheme === 'github-light') {
         setCodeTheme('tokyo-night');
       }
 
-      return nextTheme;
+      return next;
     });
   };
 
-  // Toggle favorite / starred status for a snippet
   const handleToggleFavorite = (snippetId: string) => {
-    setSnippets((previousSnippets) =>
-      previousSnippets.map((snippet) => {
-        if (snippet.id === snippetId) {
-          return { ...snippet, isFavorite: !snippet.isFavorite };
-        }
-        return snippet;
-      })
+    setSnippets((prev) =>
+      prev.map((snippet) =>
+        snippet.id === snippetId
+          ? { ...snippet, isFavorite: !snippet.isFavorite }
+          : snippet
+      )
     );
   };
 
-  // Delete a snippet from the list
   const handleDeleteSnippet = (snippetId: string) => {
-    setSnippets((previousSnippets) =>
-      previousSnippets.filter((snippet) => snippet.id !== snippetId)
-    );
+    setSnippets((prev) => prev.filter((snippet) => snippet.id !== snippetId));
   };
 
-  // Open modal to create a new snippet
   const handleOpenCreateModal = () => {
     setEditingSnippet(null);
     setIsModalOpen(true);
   };
 
-  // Open modal to edit an existing snippet
   const handleOpenEditModal = (snippet: Snippet) => {
     setEditingSnippet(snippet);
     setIsModalOpen(true);
   };
 
-  // Close modal and reset editing state
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingSnippet(null);
   };
 
-  // Save a snippet (handles both creating a new snippet and updating an existing one)
   const handleSaveSnippet = (snippetToSave: Snippet) => {
-    setSnippets((previousSnippets) => {
-      const exists = previousSnippets.some((s) => s.id === snippetToSave.id);
+    setSnippets((prev) => {
+      const exists = prev.some((s) => s.id === snippetToSave.id);
       if (exists) {
-        return previousSnippets.map((s) =>
-          s.id === snippetToSave.id ? snippetToSave : s
-        );
+        return prev.map((s) => (s.id === snippetToSave.id ? snippetToSave : s));
       }
-      return [snippetToSave, ...previousSnippets];
+      return [snippetToSave, ...prev];
     });
   };
 
-  // Toggle selection of a tag filter (click on selects it, click again unselects it)
   const handleToggleTag = (tag: string) => {
-    setSelectedTags((previousTags) =>
-      previousTags.includes(tag)
-        ? previousTags.filter((t) => t !== tag)
-        : [...previousTags, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
-  // Reset all selected tag filters
   const handleClearTags = () => {
     setSelectedTags([]);
   };
 
-  // Count metrics for display
   const totalCount = snippets.length;
   const filteredCount = filteredSnippets.length;
 
   return (
     <div className="app">
-      {/* Decorative ambient background glows */}
       <div className="ambient-glow" />
       <div className="ambient-glow-2" />
 
       <main className="main-container">
-        {/* ================= HEADER SECTION ================= */}
         <header className="app-header">
           <div className="header-left">
             <div className="logo-group">
@@ -236,19 +178,16 @@ export default function App() {
           </div>
 
           <div className="header-actions">
-            {/* Code syntax highlight theme selector */}
             <CodeThemeSelector
               currentTheme={codeTheme}
               onSelectTheme={setCodeTheme}
             />
 
-            {/* Dark / Light mode switch */}
             <ThemeToggle
               mode={appTheme}
               onToggle={handleToggleAppTheme}
             />
 
-            {/* Add snippet button */}
             <button
               id="add-snippet-btn"
               type="button"
@@ -261,7 +200,6 @@ export default function App() {
           </div>
         </header>
 
-        {/* ================= CONTROLS SECTION (Search & Filters) ================= */}
         <section className="controls-section">
           <SearchBar
             value={searchQuery}
@@ -284,7 +222,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* ================= SNIPPETS GRID SECTION ================= */}
         {filteredSnippets.length > 0 ? (
           <div className="snippet-grid">
             {filteredSnippets.map((snippet) => (
@@ -307,7 +244,6 @@ export default function App() {
         )}
       </main>
 
-      {/* ================= MODAL DIALOG ================= */}
       <AddSnippetModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}

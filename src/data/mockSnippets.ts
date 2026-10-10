@@ -1,9 +1,5 @@
 import type { Snippet } from "../types/index";
 
-/**
- * Starter mock snippets loaded on the first app visit.
- * These give the user immediate sample code to explore, search, copy, and filter.
- */
 export const initialSnippets: Snippet[] = [
   {
     id: "1",

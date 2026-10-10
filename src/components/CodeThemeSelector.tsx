@@ -2,52 +2,27 @@ import { useState, useRef, useEffect } from 'react';
 import { CODE_THEMES, type CodeThemeId } from '../types/themes';
 
 interface CodeThemeSelectorProps {
-  /** The currently selected code theme ID */
   currentTheme: CodeThemeId;
-  /** Callback triggered when the user picks a new code theme */
   onSelectTheme: (theme: CodeThemeId) => void;
 }
 
-/**
- * CodeThemeSelector Component
- *
- * A custom dropdown menu that lets users choose their favorite color scheme
- * for the code snippet blocks (e.g. Tokyo Night, Dracula, GitHub Dark, etc.).
- *
- * Key React concepts demonstrated here:
- * 1. `useState` - tracks whether the dropdown popup is open or closed.
- * 2. `useRef` - points directly to the wrapper <div> to detect clicks outside.
- * 3. `useEffect` - listens for global mouse clicks to automatically close the menu.
- */
 export const CodeThemeSelector = ({
   currentTheme,
   onSelectTheme,
 }: CodeThemeSelectorProps) => {
-  // Is the dropdown menu currently open?
   const [isOpen, setIsOpen] = useState(false);
-
-  // Reference to the dropdown container to check for outside clicks
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Find the full theme object matching the current theme ID (fallback to first theme)
   const activeTheme = CODE_THEMES.find((theme) => theme.id === currentTheme) || CODE_THEMES[0];
 
-  // Close the dropdown menu if the user clicks anywhere outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const clickedOutside =
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node);
-
-      if (clickedOutside) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
-    // Listen for mousedown anywhere on the page
     document.addEventListener('mousedown', handleClickOutside);
-
-    // Clean up event listener when this component unmounts
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -55,12 +30,11 @@ export const CodeThemeSelector = ({
 
   const handleSelect = (themeId: CodeThemeId) => {
     onSelectTheme(themeId);
-    setIsOpen(false); // Close dropdown after selection
+    setIsOpen(false);
   };
 
   return (
     <div className="theme-selector-container" ref={containerRef}>
-      {/* Trigger button that opens/closes the dropdown */}
       <button
         type="button"
         className={`theme-selector-btn ${isOpen ? 'active' : ''}`}
@@ -69,7 +43,6 @@ export const CodeThemeSelector = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        {/* Palette icon */}
         <span className="theme-icon">
           <svg
             width="15"
@@ -90,10 +63,8 @@ export const CodeThemeSelector = ({
           </svg>
         </span>
 
-        {/* Current theme name */}
         <span className="theme-name">{activeTheme.name}</span>
 
-        {/* Three mini preview color dots */}
         <span className="theme-dots-preview">
           {activeTheme.previewColors.map((color, index) => (
             <span
@@ -104,7 +75,6 @@ export const CodeThemeSelector = ({
           ))}
         </span>
 
-        {/* Dropdown chevron arrow */}
         <svg
           className={`theme-chevron ${isOpen ? 'rotate' : ''}`}
           width="12"
@@ -121,7 +91,6 @@ export const CodeThemeSelector = ({
         </svg>
       </button>
 
-      {/* Floating theme selection menu */}
       {isOpen && (
         <div className="theme-dropdown-menu" role="listbox">
           <div className="theme-dropdown-header">Code Color Theme</div>
@@ -137,7 +106,6 @@ export const CodeThemeSelector = ({
                 aria-selected={isSelected}
               >
                 <div className="theme-item-left">
-                  {/* Theme preview dots */}
                   <div className="theme-item-dots">
                     {theme.previewColors.map((dotColor, dotIndex) => (
                       <span
@@ -150,7 +118,6 @@ export const CodeThemeSelector = ({
                   <span className="theme-item-name">{theme.name}</span>
                 </div>
 
-                {/* Checkmark icon for currently selected theme */}
                 {isSelected && (
                   <svg
                     width="14"
@@ -174,4 +141,3 @@ export const CodeThemeSelector = ({
     </div>
   );
 };
-

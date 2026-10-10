@@ -1,21 +1,10 @@
-/**
- * Application color theme mode: either dark or light.
- */
 export type AppThemeMode = 'dark' | 'light';
 
 interface ThemeToggleProps {
-  /** The currently active theme mode ('dark' or 'light') */
   mode: AppThemeMode;
-  /** Function triggered when the user clicks the toggle button */
   onToggle: () => void;
 }
 
-/**
- * ThemeToggle Component
- *
- * A toggle button that switches the whole application between Dark and Light mode.
- * Shows a Moon icon in dark mode and a Sun icon in light mode.
- */
 export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
   const isDark = mode === 'dark';
 
@@ -30,7 +19,6 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
       <div className={`mode-toggle-track ${isDark ? 'is-dark' : 'is-light'}`}>
         <span className="mode-toggle-icon-wrap">
           {isDark ? (
-            /* Moon icon for Dark mode */
             <svg
               className="mode-icon moon-icon"
               width="15"
@@ -48,7 +36,6 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
               <path d="M21 5h-4" />
             </svg>
           ) : (
-            /* Sun icon for Light mode */
             <svg
               className="mode-icon sun-icon"
               width="15"
@@ -61,7 +48,13 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.2" />
+              <circle
+                cx="12"
+                cy="12"
+                r="4"
+                fill="currentColor"
+                fillOpacity="0.2"
+              />
               <path d="M12 2v2" />
               <path d="M12 20v2" />
               <path d="m4.93 4.93 1.41 1.41" />
@@ -78,4 +71,3 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
     </button>
   );
 };
-

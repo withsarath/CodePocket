@@ -1,25 +1,13 @@
 interface EmptyStateProps {
-  /** True if the user has any snippets saved at all, false if database is empty */
   hasSnippets: boolean;
-  /** Current text in the search input */
   searchQuery: string;
 }
 
-/**
- * EmptyState Component
- *
- * Displays a friendly placeholder message when no snippets are visible.
- * Handles two scenarios:
- * 1. The user has snippets, but none matched the search/filter criteria.
- * 2. The user has completely empty storage and needs to create their first snippet.
- */
 export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
-  // Case 1: Snippets exist, but current search/filter returned 0 results
   if (hasSnippets) {
     return (
       <div className="empty-state">
         <div className="empty-icon" aria-hidden="true">
-          {/* Search magnifying glass with minus sign */}
           <svg
             width="48"
             height="48"
@@ -45,11 +33,9 @@ export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
     );
   }
 
-  // Case 2: No snippets saved at all in the vault
   return (
     <div className="empty-state">
       <div className="empty-icon" aria-hidden="true">
-        {/* Document bookmark icon */}
         <svg
           width="48"
           height="48"
@@ -71,4 +57,3 @@ export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
     </div>
   );
 };
-

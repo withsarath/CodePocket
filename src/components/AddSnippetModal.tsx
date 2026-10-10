@@ -2,19 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import type { Snippet } from '../types';
 
 export interface AddSnippetModalProps {
-  /** Controls whether the modal pop-up is visible */
   isOpen: boolean;
-  /** Function to close the modal */
   onClose: () => void;
-  /** Function called when the user successfully submits a snippet (create or update) */
   onSave?: (snippet: Snippet) => void;
-  /** Function called when the user successfully submits a new snippet (backwards-compatible alias) */
   onAdd?: (snippet: Snippet) => void;
-  /** Existing snippet to edit. If null/undefined, modal is in Create mode */
   editingSnippet?: Snippet | null;
 }
 
-/** Supported programming languages in the dropdown */
 const LANGUAGES = [
   'typescript',
   'javascript',
@@ -41,11 +35,6 @@ interface ModalContentProps {
   firstInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-/**
- * Inner modal content component.
- * Remounted whenever the target snippet changes (via key in parent)
- * so form state initializes cleanly with zero useEffect cascading renders.
- */
 const SnippetModalContent = ({
   onClose,
   onSave,
@@ -55,34 +44,28 @@ const SnippetModalContent = ({
 }: ModalContentProps) => {
   const isEditing = Boolean(editingSnippet);
 
-  // Form input states initialized directly from snippet (if editing)
   const [title, setTitle] = useState(editingSnippet?.title ?? '');
   const [description, setDescription] = useState(editingSnippet?.description ?? '');
   const [code, setCode] = useState(editingSnippet?.code ?? '');
   const [language, setLanguage] = useState(editingSnippet?.language ?? 'javascript');
   const [tagsInput, setTagsInput] = useState(editingSnippet?.tags.join(', ') ?? '');
 
-  // Handles form submission (Create or Update)
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault(); // Stop standard browser page reload
+    event.preventDefault();
 
     const cleanTitle = title.trim();
     const cleanCode = code.trim();
 
-    // Guard: ensure required fields are not just empty spaces
     if (!cleanTitle || !cleanCode) {
       return;
     }
 
-    // Convert comma-separated string into a clean array of lowercase tags
-    // e.g., "React, Hooks, Web" -> ["react", "hooks", "web"]
     const tags = tagsInput
       .split(',')
       .map((tag) => tag.trim().toLowerCase())
       .filter((tag) => tag.length > 0);
 
     if (editingSnippet) {
-      // Build the updated Snippet object, preserving original id, favorite, and createdAt
       const updatedSnippet: Snippet = {
         ...editingSnippet,
         title: cleanTitle,
@@ -99,7 +82,6 @@ const SnippetModalContent = ({
         onAdd(updatedSnippet);
       }
     } else {
-      // Build the new Snippet object
       const newSnippet: Snippet = {
         id: crypto.randomUUID(),
         title: cleanTitle,
@@ -121,12 +103,10 @@ const SnippetModalContent = ({
     onClose();
   };
 
-  // Check if form is ready to submit (both title and code have text)
   const isSubmitDisabled = !title.trim() || !code.trim();
 
   return (
     <>
-      {/* Modal Header */}
       <div className="modal-header">
         <h2 id="modal-title-heading" className="modal-title">
           <span className="modal-title-icon" aria-hidden="true">
@@ -161,9 +141,7 @@ const SnippetModalContent = ({
         </button>
       </div>
 
-      {/* Modal Form */}
       <form onSubmit={handleSubmit} className="modal-form">
-        {/* Title field */}
         <div className="form-group">
           <label htmlFor="snippet-title" className="form-label">
             Title *
@@ -180,7 +158,6 @@ const SnippetModalContent = ({
           />
         </div>
 
-        {/* Description field */}
         <div className="form-group">
           <label htmlFor="snippet-description" className="form-label">
             Description
@@ -195,7 +172,6 @@ const SnippetModalContent = ({
           />
         </div>
 
-        {/* Row with Language selector and Tags input */}
         <div className="form-row">
           <div className="form-group form-group-half">
             <label htmlFor="snippet-language" className="form-label">
@@ -231,7 +207,6 @@ const SnippetModalContent = ({
           </div>
         </div>
 
-        {/* Code text area */}
         <div className="form-group">
           <label htmlFor="snippet-code" className="form-label">
             Code *
@@ -247,7 +222,6 @@ const SnippetModalContent = ({
           />
         </div>
 
-        {/* Form action buttons */}
         <div className="modal-actions">
           <button type="button" className="btn-cancel" onClick={onClose}>
             Cancel
@@ -265,13 +239,6 @@ const SnippetModalContent = ({
   );
 };
 
-/**
- * AddSnippetModal (SnippetModal) Component
- *
- * A reusable accessible modal dialog for creating and updating code snippets.
- * Includes focus trap, sensible focus restoration, keyboard Escape support,
- * and background scroll lock.
- */
 export const AddSnippetModal = ({
   isOpen,
   onClose,
@@ -283,42 +250,36 @@ export const AddSnippetModal = ({
   const firstInputRef = useRef<HTMLInputElement | null>(null);
   const triggerElementRef = useRef<HTMLElement | null>(null);
 
-  // Capture the trigger element that opened the modal to restore focus when it closes
   useEffect(() => {
     if (isOpen) {
       triggerElementRef.current = document.activeElement as HTMLElement | null;
 
-      // Focus first input field once modal opens
       const timer = setTimeout(() => {
         firstInputRef.current?.focus();
       }, 50);
 
-      // Lock body scroll while modal is active
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
 
       return () => {
         clearTimeout(timer);
         document.body.style.overflow = originalOverflow;
-        // Restore focus to the button that opened the modal
         triggerElementRef.current?.focus();
       };
     }
   }, [isOpen]);
 
-  // Keyboard navigation: Escape key closes modal & Tab cycles focus within modal
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // 1. Escape to close
       if (event.key === 'Escape') {
         event.preventDefault();
         onClose();
         return;
       }
 
-      // 2. Focus trap: loop Tab through modal's focusable elements
+      // Trap focus inside modal
       if (event.key === 'Tab' && containerRef.current) {
         const focusableSelectors =
           'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -332,13 +293,11 @@ export const AddSnippetModal = ({
         const lastElement = focusableElements[focusableElements.length - 1];
 
         if (event.shiftKey) {
-          // Shift + Tab: reverse cycling
           if (document.activeElement === firstElement) {
             event.preventDefault();
             lastElement.focus();
           }
         } else {
-          // Tab: forward cycling
           if (document.activeElement === lastElement) {
             event.preventDefault();
             firstElement.focus();
@@ -351,12 +310,10 @@ export const AddSnippetModal = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // If modal is not open, do not render anything to the DOM
   if (!isOpen) {
     return null;
   }
 
-  // Close modal when user clicks on the backdrop (outside the modal container)
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (event.target === event.currentTarget) {
       onClose();
@@ -371,7 +328,6 @@ export const AddSnippetModal = ({
       aria-modal="true"
       aria-labelledby="modal-title-heading"
     >
-      {/* Click inside modal card should NOT trigger handleOverlayClick */}
       <div
         ref={containerRef}
         key={editingSnippet ? editingSnippet.id : 'create-snippet'}
@@ -390,5 +346,4 @@ export const AddSnippetModal = ({
   );
 };
 
-/** Alias for semantic clarity */
 export const SnippetModal = AddSnippetModal;

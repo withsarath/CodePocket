@@ -1,22 +1,11 @@
 interface SearchBarProps {
-  /** The current search query string from parent state */
   value: string;
-  /** Callback function called whenever the search query changes */
   onChange: (value: string) => void;
 }
 
-/**
- * SearchBar Component
- *
- * This is a "controlled component" in React:
- * - It displays the current `value` passed from the parent (`App.tsx`).
- * - When the user types, `onChange` tells the parent to update its state.
- * - When there is text, a clear "✕" button appears to easily reset the search.
- */
 export const SearchBar = ({ value, onChange }: SearchBarProps) => {
   return (
     <div className="search-bar">
-      {/* Search magnifying glass icon */}
       <svg
         className="search-icon"
         width="18"
@@ -33,7 +22,6 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
         <path d="m21 21-4.35-4.35" />
       </svg>
 
-      {/* Main search text input */}
       <input
         id="search-input"
         type="text"
@@ -43,7 +31,6 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
         className="search-input"
       />
 
-      {/* Clear button (only shown when user has typed something) */}
       {value && (
         <button
           className="search-clear"
@@ -57,4 +44,3 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
     </div>
   );
 };
-

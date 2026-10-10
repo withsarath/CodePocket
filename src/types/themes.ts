@@ -1,70 +1,53 @@
-/**
- * Allowed theme identifiers for snippet code blocks.
- * Users can pick any of these themes to change code syntax highlighting colors.
- */
 export type CodeThemeId =
-  | 'tokyo-night'
-  | 'one-dark'
-  | 'dracula'
-  | 'monokai'
-  | 'github-dark'
-  | 'github-light';
+  | "tokyo-night"
+  | "one-dark"
+  | "dracula"
+  | "monokai"
+  | "github-dark"
+  | "github-light";
 
-/**
- * Definition of a code syntax theme.
- */
 export interface CodeTheme {
-  /** Unique ID matching the CSS class name prefix (e.g., 'tokyo-night') */
   id: CodeThemeId;
-
-  /** User-friendly display name (e.g., 'Tokyo Night') */
   name: string;
-
-  /** Three sample hex colors used to show a mini preview in the dropdown */
   previewColors: [string, string, string];
-
-  /** Editor background color associated with this theme */
   bg: string;
 }
 
-/**
- * List of all available code themes in CodePocket.
- */
 export const CODE_THEMES: CodeTheme[] = [
   {
-    id: 'tokyo-night',
-    name: 'Tokyo Night',
-    previewColors: ['#bb9af7', '#7aa2f7', '#9ece6a'],
-    bg: '#16161e',
+    id: "tokyo-night",
+    name: "Tokyo Night",
+    previewColors: ["#bb9af7", "#7aa2f7", "#9ece6a"],
+    bg: "#16161e",
   },
   {
-    id: 'github-light',
-    name: 'GitHub Light',
-    previewColors: ['#cf222e', '#0969da', '#1a7f37'],
-    bg: '#f6f8fa',
+    id: "github-light",
+    name: "GitHub Light",
+    previewColors: ["#cf222e", "#0969da", "#1a7f37"],
+    bg: "#f6f8fa",
   },
   {
-    id: 'one-dark',
-    name: 'One Dark',
-    previewColors: ['#c678dd', '#61afef', '#98c379'],
-    bg: '#1a1a22',
+    id: "one-dark",
+    name: "One Dark",
+    previewColors: ["#c678dd", "#61afef", "#98c379"],
+    bg: "#1a1a22",
   },
   {
-    id: 'dracula',
-    name: 'Dracula',
-    previewColors: ['#ff79c6', '#bd93f9', '#50fa7b'],
-    bg: '#1e1f29',
+    id: "dracula",
+    name: "Dracula",
+    previewColors: ["#ff79c6", "#bd93f9", "#50fa7b"],
+    bg: "#1e1f29",
   },
   {
-    id: 'monokai',
-    name: 'Monokai',
-    previewColors: ['#f92672', '#a6e22e', '#66d9ef'],
-    bg: '#1e1f1c',
+    id: "monokai",
+    name: "Monokai",
+    previewColors: ["#f92672", "#a6e22e", "#66d9ef"],
+    bg: "#1e1f1c",
   },
   {
-    id: 'github-dark',
-    name: 'GitHub Dark',
-    previewColors: ['#ff7b72', '#79c0ff', '#7ee787'],
-    bg: '#0d1117',
+    id: "github-dark",
+    name: "GitHub Dark",
+    previewColors: ["#ff7b72", "#79c0ff", "#7ee787"],
+    bg: "#0d1117",
   },
 ];
