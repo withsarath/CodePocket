@@ -245,6 +245,7 @@ export default function App() {
       </main>
 
       <AddSnippetModal
+        key={editingSnippet?.id || 'new'}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSaveSnippet}

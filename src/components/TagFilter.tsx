@@ -47,7 +47,7 @@ export const TagFilter = ({
         type="button"
         className={`fav-filter-btn ${showFavoritesOnly ? 'active' : ''}`}
         onClick={onToggleFavorites}
-        aria-label="Filter favorites"
+        title="Filter favorites"
       >
         <span className="fav-icon">{showFavoritesOnly ? '★' : '☆'}</span>
         <span className="fav-label">Favorites</span>

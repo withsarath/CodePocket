@@ -40,8 +40,6 @@ export const CodeThemeSelector = ({
         className={`theme-selector-btn ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen((prev) => !prev)}
         title="Change Code Snippet Color Theme"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
       >
         <span className="theme-icon">
           <svg
@@ -53,7 +51,6 @@ export const CodeThemeSelector = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            aria-hidden="true"
           >
             <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
             <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
@@ -85,14 +82,13 @@ export const CodeThemeSelector = ({
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
-          aria-hidden="true"
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
       {isOpen && (
-        <div className="theme-dropdown-menu" role="listbox">
+        <div className="theme-dropdown-menu">
           <div className="theme-dropdown-header">Code Color Theme</div>
           {CODE_THEMES.map((theme) => {
             const isSelected = theme.id === currentTheme;
@@ -102,8 +98,6 @@ export const CodeThemeSelector = ({
                 type="button"
                 className={`theme-dropdown-item ${isSelected ? 'selected' : ''}`}
                 onClick={() => handleSelect(theme.id)}
-                role="option"
-                aria-selected={isSelected}
               >
                 <div className="theme-item-left">
                   <div className="theme-item-dots">
@@ -128,7 +122,6 @@ export const CodeThemeSelector = ({
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    aria-hidden="true"
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>

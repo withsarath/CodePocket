@@ -7,7 +7,7 @@ export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
   if (hasSnippets) {
     return (
       <div className="empty-state">
-        <div className="empty-icon" aria-hidden="true">
+        <div className="empty-icon">
           <svg
             width="48"
             height="48"
@@ -35,7 +35,7 @@ export const EmptyState = ({ hasSnippets, searchQuery }: EmptyStateProps) => {
 
   return (
     <div className="empty-state">
-      <div className="empty-icon" aria-hidden="true">
+      <div className="empty-icon">
         <svg
           width="48"
           height="48"

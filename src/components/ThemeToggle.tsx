@@ -14,7 +14,6 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
       className="theme-mode-toggle"
       onClick={onToggle}
       title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       <div className={`mode-toggle-track ${isDark ? 'is-dark' : 'is-light'}`}>
         <span className="mode-toggle-icon-wrap">
@@ -29,7 +28,6 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              aria-hidden="true"
             >
               <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
               <path d="M19 3v4" />
@@ -46,7 +44,6 @@ export const ThemeToggle = ({ mode, onToggle }: ThemeToggleProps) => {
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              aria-hidden="true"
             >
               <circle
                 cx="12"

@@ -16,7 +16,6 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        aria-hidden="true"
       >
         <circle cx="11" cy="11" r="8" />
         <path d="m21 21-4.35-4.35" />
@@ -35,7 +34,7 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
         <button
           className="search-clear"
           onClick={() => onChange('')}
-          aria-label="Clear search"
+          title="Clear search"
           type="button"
         >
           ✕
