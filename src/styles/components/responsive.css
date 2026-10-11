@@ -1,0 +1,47 @@
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .theme-selector-container,
+  .theme-mode-toggle {
+    flex-grow: 1;
+  }
+
+  .theme-selector-btn,
+  .theme-mode-toggle {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .tag-filter-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fav-filter-btn {
+    align-self: flex-start;
+  }
+
+  .app-title {
+    font-size: 24px;
+  }
+}

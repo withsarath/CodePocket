@@ -24,7 +24,8 @@ export const SearchBar = ({ value, onChange }: SearchBarProps) => {
       <input
         id="search-input"
         type="text"
-        placeholder="Search snippets by title..."
+        placeholder="Search snippets by title, description, or tags..."
+        aria-label="Search snippets by title, description, or tags"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="search-input"

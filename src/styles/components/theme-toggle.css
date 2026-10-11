@@ -1,0 +1,73 @@
+/* ===== THEME MODE TOGGLE (DARK / LIGHT) ===== */
+.theme-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.theme-mode-toggle:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+  color: var(--text-bright);
+  box-shadow: var(--shadow-md);
+}
+
+.mode-toggle-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-toggle-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transition: transform var(--transition-base), color var(--transition-fast);
+}
+
+.mode-icon {
+  display: block;
+  transition: transform var(--transition-base);
+}
+
+.moon-icon {
+  color: #a1a1aa;
+}
+
+.sun-icon {
+  color: #f59e0b;
+}
+
+.theme-mode-toggle:hover .moon-icon {
+  color: #ffffff;
+  transform: rotate(-15deg);
+}
+
+.theme-mode-toggle:hover .sun-icon {
+  color: #d97706;
+  transform: rotate(45deg);
+}
+
+.mode-label-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.theme-mode-toggle:hover .mode-label-text {
+  color: var(--text-bright);
+}
