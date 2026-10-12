@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { initialSnippets } from './data/mockSnippets';
+import { exportSnippets, readSnippetsFromFile } from './utils/snippetExportImport';
 
 import { SnippetCard } from './components/SnippetCard';
 import { SearchBar } from './components/SearchBar';
@@ -35,6 +36,23 @@ export default function App() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSnippet, setEditingSnippet] = useState<Snippet | null>(null);
+
+  const [toast, setToast] = useState<{
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-dismiss toast notification after 4.5 seconds
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => {
+      setToast(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   // Apply the app theme to the document and update the browser theme color
   useEffect(() => {
@@ -135,6 +153,54 @@ export default function App() {
     setSelectedTags([]);
   };
 
+  const handleExportSnippets = () => {
+    try {
+      exportSnippets(snippets, 'codepocket-backup.json');
+      setToast({
+        type: 'success',
+        title: 'Export Complete',
+        message: `Downloaded ${snippets.length} snippet${snippets.length !== 1 ? 's' : ''} as codepocket-backup.json`,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to export snippets.';
+      setToast({
+        type: 'error',
+        title: 'Export Failed',
+        message,
+      });
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const importedSnippets = await readSnippetsFromFile(file);
+      setSnippets((prev) => [...importedSnippets, ...prev]);
+      setToast({
+        type: 'success',
+        title: 'Import Successful',
+        message: `Successfully added ${importedSnippets.length} snippet${importedSnippets.length !== 1 ? 's' : ''} to your vault!`,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Invalid backup file.';
+      setToast({
+        type: 'error',
+        title: 'Import Failed',
+        message,
+      });
+    } finally {
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
   const totalCount = snippets.length;
   const filteredCount = filteredSnippets.length;
 
@@ -142,6 +208,69 @@ export default function App() {
     <div className="app">
       <div className="ambient-glow" />
       <div className="ambient-glow-2" />
+
+      {/* Toast Notification for Import/Export Feedback */}
+      {toast && (
+        <div className="toast-container" role="status" aria-live="polite">
+          <div className={`toast toast-${toast.type}`}>
+            <span className="toast-icon">
+              {toast.type === 'success' ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              )}
+            </span>
+            <div className="toast-content">
+              <div className="toast-title">{toast.title}</div>
+              <div className="toast-message">{toast.message}</div>
+            </div>
+            <button
+              type="button"
+              className="toast-close-btn"
+              onClick={() => setToast(null)}
+              aria-label="Dismiss notification"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="main-container">
         <header className="app-header">
@@ -170,6 +299,64 @@ export default function App() {
           </div>
 
           <div className="header-actions">
+            {/* Hidden file input for snippet import */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: 'none' }}
+              onChange={handleImportFileChange}
+              aria-label="Import snippets backup JSON file"
+            />
+
+            <button
+              id="import-snippets-btn"
+              type="button"
+              className="header-secondary-btn"
+              onClick={handleImportClick}
+              title="Import snippets from a JSON backup file"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span>Import</span>
+            </button>
+
+            <button
+              id="export-snippets-btn"
+              type="button"
+              className="header-secondary-btn"
+              onClick={handleExportSnippets}
+              title="Export snippets to a JSON backup file"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Export</span>
+            </button>
+
             <CodeThemeSelector
               currentTheme={codeTheme}
               onSelectTheme={setCodeTheme}

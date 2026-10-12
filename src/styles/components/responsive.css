@@ -12,13 +12,14 @@
   }
 
   .theme-selector-container,
-  .theme-mode-toggle {
+  .theme-mode-toggle,
+  .header-secondary-btn {
     flex-grow: 1;
   }
 
   .theme-selector-btn,
-  .theme-mode-toggle {
-    width: 100%;
+  .theme-mode-toggle,
+  .header-secondary-btn {
     justify-content: center;
   }
 
