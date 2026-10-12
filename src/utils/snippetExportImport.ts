@@ -28,5 +28,11 @@ export async function readSnippetsFromFile(file: File): Promise<Snippet[]> {
   }
 
   // give new ids so they don't clash with existing snippets
-  return data.map((item) => ({ ...item, id: crypto.randomUUID() }));
+  return data.map((item) => ({
+    ...item,
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    description: item.description ?? '',
+    isFavorite: Boolean(item.isFavorite),
+    id: crypto.randomUUID(),
+  }));
 }
