@@ -1,20 +1,7 @@
 import type { Snippet } from '../types';
 
 /**
- * Generates a unique ID for an imported snippet.
- */
-function generateSnippetId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return `snippet-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
-
-/**
  * Exports the snippets array as a JSON file and triggers a browser download.
- *
- * @param snippets Array of snippets to export
- * @param filename File name for the downloaded file (defaults to codepocket-backup.json)
  */
 export function exportSnippets(
   snippets: Snippet[],
@@ -39,67 +26,41 @@ export function exportSnippets(
  * Throws an Error with a descriptive message if the content is invalid.
  */
 export function parseAndValidateSnippets(jsonText: string): Snippet[] {
-  let parsed: unknown;
+  let parsed: any;
   try {
     parsed = JSON.parse(jsonText);
   } catch {
-    throw new Error('Invalid JSON format: The selected file could not be parsed as JSON.');
+    throw new Error('Invalid file format: must be an array of snippets with a title, code, and language.');
   }
 
-  if (!Array.isArray(parsed)) {
-    throw new Error('Invalid backup format: The file must contain a JSON array of snippets.');
+  const isValid =
+    Array.isArray(parsed) &&
+    parsed.every(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        typeof item.title === 'string' &&
+        typeof item.code === 'string' &&
+        typeof item.language === 'string'
+    );
+
+  if (!isValid) {
+    throw new Error('Invalid file format: must be an array of snippets with a title, code, and language.');
   }
 
-  if (parsed.length === 0) {
-    throw new Error('The backup file contains an empty array (no snippets found).');
-  }
-
-  const validatedSnippets: Snippet[] = [];
-
-  for (let i = 0; i < parsed.length; i++) {
-    const item = parsed[i];
-
-    if (!item || typeof item !== 'object') {
-      throw new Error(`Snippet #${i + 1} is invalid (expected an object).`);
-    }
-
-    const { title, code, language, description, tags, isFavorite, createdAt, updatedAt } =
-      item as Record<string, unknown>;
-
-    if (typeof title !== 'string' || !title.trim()) {
-      throw new Error(`Snippet #${i + 1} is missing a required "title" string.`);
-    }
-
-    if (typeof code !== 'string') {
-      throw new Error(`Snippet #${i + 1} ("${title}") is missing required "code" string.`);
-    }
-
-    if (typeof language !== 'string' || !language.trim()) {
-      throw new Error(`Snippet #${i + 1} ("${title}") is missing required "language" string.`);
-    }
-
-    // Prepare clean tags array
-    const cleanTags: string[] = Array.isArray(tags)
-      ? tags
-          .map((t) => (typeof t === 'string' ? t.trim().toLowerCase() : ''))
-          .filter(Boolean)
-      : [];
-
-    validatedSnippets.push({
-      // Assign a new ID to avoid any duplicates or ID collisions with existing snippets
-      id: generateSnippetId(),
-      title: title.trim(),
-      description: typeof description === 'string' ? description.trim() : '',
-      code,
-      language: language.trim().toLowerCase(),
-      tags: cleanTags,
-      isFavorite: Boolean(isFavorite),
-      createdAt: typeof createdAt === 'number' ? createdAt : Date.now(),
-      updatedAt: typeof updatedAt === 'number' ? updatedAt : undefined,
-    });
-  }
-
-  return validatedSnippets;
+  return parsed.map((item: any) => ({
+    id: crypto.randomUUID(),
+    title: String(item.title).trim(),
+    description: typeof item.description === 'string' ? item.description.trim() : '',
+    code: String(item.code),
+    language: String(item.language).trim().toLowerCase(),
+    tags: Array.isArray(item.tags)
+      ? item.tags.map((t: unknown) => String(t).trim().toLowerCase()).filter(Boolean)
+      : [],
+    isFavorite: Boolean(item.isFavorite),
+    createdAt: typeof item.createdAt === 'number' ? item.createdAt : Date.now(),
+    updatedAt: typeof item.updatedAt === 'number' ? item.updatedAt : undefined,
+  }));
 }
 
 /**

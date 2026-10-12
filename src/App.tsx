@@ -185,7 +185,7 @@ export default function App() {
       setToast({
         type: 'success',
         title: 'Import Successful',
-        message: `Successfully added ${importedSnippets.length} snippet${importedSnippets.length !== 1 ? 's' : ''} to your vault!`,
+        message: `Successfully added ${importedSnippets.length} snippet${importedSnippets.length !== 1 ? 's' : ''} to your snippets!`,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Invalid backup file.';

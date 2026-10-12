@@ -14,6 +14,8 @@
 - Syntax highlighting with multiple code themes
 - Light/dark mode
 - Saves everything in the browser (localStorage)
+- Export/import snippets as JSON
+
 
 ## Tech stack
 
@@ -28,8 +30,7 @@ React, TypeScript, Vite, highlight.js
 
 
 ## Future improvements
-
-- Export/import snippets as JSON
 - Backend + login so snippets sync across devices
 
 ## Live demo
+
