@@ -38,6 +38,7 @@ export const AddSnippetModal = ({
   const [language, setLanguage] = useState(editingSnippet?.language ?? 'javascript');
   const [tagsInput, setTagsInput] = useState(editingSnippet?.tags.join(', ') ?? '');
 
+  // stop the page from scrolling behind the modal, and close on Escape
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -59,12 +60,13 @@ export const AddSnippetModal = ({
     event.preventDefault();
 
     const cleanTitle = title.trim();
-    const cleanCode = code.trim();
 
-    if (!cleanTitle || !cleanCode) {
+    // "required" lets spaces through, so check again here
+    if (!cleanTitle || !code.trim()) {
       return;
     }
 
+    // "react, Hooks" -> ["react", "hooks"]
     const tags = tagsInput
       .split(',')
       .map((tag) => tag.trim().toLowerCase())
@@ -75,7 +77,7 @@ export const AddSnippetModal = ({
         ...editingSnippet,
         title: cleanTitle,
         description: description.trim(),
-        code: cleanCode,
+        code,
         language,
         tags,
         updatedAt: Date.now(),
@@ -85,7 +87,7 @@ export const AddSnippetModal = ({
         id: crypto.randomUUID(),
         title: cleanTitle,
         description: description.trim(),
-        code: cleanCode,
+        code,
         language,
         tags,
         isFavorite: false,
@@ -96,44 +98,19 @@ export const AddSnippetModal = ({
     onClose();
   };
 
-  const isSubmitDisabled = !title.trim() || !code.trim();
-
   return (
-    <div
-      className="modal-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
-            <span className="modal-title-icon">
-              {isEditing ? (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                  <path d="m15 5 4 4" />
-                </svg>
-              ) : (
-                '+'
-              )}
-            </span>
+            <span className="modal-title-icon">{isEditing ? '✎' : '+'}</span>
             {isEditing ? 'Edit Snippet' : 'New Snippet'}
           </h2>
           <button
             type="button"
             className="modal-close"
             onClick={onClose}
-            title="Close modal"
+            title="Close"
           >
             ✕
           </button>
@@ -223,11 +200,7 @@ export const AddSnippetModal = ({
             <button type="button" className="btn-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-submit"
-              disabled={isSubmitDisabled}
-            >
+            <button type="submit" className="btn-submit">
               {isEditing ? 'Save Changes' : 'Add Snippet'}
             </button>
           </div>
