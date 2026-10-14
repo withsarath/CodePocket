@@ -32,4 +32,4 @@ React, TypeScript, Vite, highlight.js
 - Backend + login so snippets sync across devices
 
 ## Live demo
-https://codepocket-vert.vercel.app/
+Demo: https://codepocket-vert.vercel.app/
